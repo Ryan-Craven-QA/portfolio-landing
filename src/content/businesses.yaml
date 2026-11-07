@@ -1,0 +1,122 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  PRODUCT LINES
+#  Each entry is one product line ("business"). Visitors see these as product
+#  lines; internal strategy never appears on the site.
+#
+#  visible   true  → listed on the site, gets its own page at /products/<id>/
+#            false → hidden everywhere, and so are all of its products
+#  status    exploring | in-development | coming-soon | early-access | available
+#            Anything but "available" shows as a badge, so a line is never
+#            presented as operational before it is.
+#  hue       0–360 on the OKLCH colour wheel; drives the line's accent colour.
+#  glyph     flow | plug | calendar | grid | shield
+#  art       document-fields | plugin-toggles | calendar-grid | file-stack | message-check
+#
+#  Launching with a single line: set `visible: false` on the others.
+# ─────────────────────────────────────────────────────────────────────────────
+
+- id: operations-software
+  name: Operations Software
+  tagline: AI-assisted tools that take repetitive admin off your plate.
+  description: >-
+    Software for small businesses that handles the busywork around documents and
+    workflows — pulling details out of files, organizing information, and moving
+    routine tasks along without manual copy-and-paste.
+  visible: true
+  status: in-development
+  order: 10
+  hue: 255
+  glyph: flow
+  art: document-fields
+  audience: Small businesses and lean operations teams
+  examples:
+    - AI-assisted document processing
+    - Business workflow automation
+    - Reusable automation packages
+    - Industry-specific productivity tools
+
+- id: wordpress-plugins
+  name: WordPress Plugins
+  tagline: Practical utilities for running and maintaining WordPress sites.
+  description: >-
+    Focused plugins for the administrative side of WordPress — keeping track of
+    documents and media, handling routine maintenance, and making day-to-day site
+    management faster for site owners and agencies.
+  visible: true
+  status: in-development
+  order: 20
+  hue: 200
+  glyph: plug
+  art: plugin-toggles
+  audience: Site owners, administrators, and agencies
+  examples:
+    - Document inventory and management
+    - Website maintenance utilities
+    - Administrative productivity tools
+    - Agency-oriented plugins
+
+- id: employer-toolkits
+  name: Employer Toolkits
+  tagline: Organized checklists, calendars, and templates for small-employer admin.
+  description: >-
+    Downloadable toolkits that help small employers keep recurring administrative
+    work in order — checklists, deadline calendars, and document templates that
+    turn scattered tasks into a dependable routine.
+  visible: true
+  status: in-development
+  order: 30
+  hue: 150
+  glyph: calendar
+  art: calendar-grid
+  audience: Owners and office managers at small employers
+  disclaimer: >-
+    Toolkits are organizational resources, not legal, tax, or HR advice.
+    Requirements vary by location — confirm your obligations with a qualified
+    professional.
+  examples:
+    - Administrative checklists
+    - Deadline calendars
+    - Document organization templates
+    - Small-business operations toolkits
+
+- id: templates-and-tools
+  name: Templates & Tools
+  tagline: Ready-made templates, calculators, and workflows for specific jobs.
+  description: >-
+    A growing shelf of immediately useful digital products — spreadsheet
+    templates, calculators, planning resources, and reusable automation and AI
+    workflow templates — each designed around one job.
+  visible: true
+  status: in-development
+  order: 40
+  hue: 85
+  glyph: grid
+  art: file-stack
+  audience: Freelancers, small teams, and anyone who would rather not start from a blank page
+  examples:
+    - Spreadsheet templates
+    - Business calculators
+    - Planning resources
+    - Automation workflows
+    - AI workflow templates
+    - Digital business toolkits
+
+- id: family-tech-safety
+  name: Family Tech Safety
+  tagline: Plain-language guides for using technology safely at home.
+  description: >-
+    Educational resources that help everyday families use technology with
+    confidence — recognizing scams, protecting accounts, and building safer
+    digital habits across generations.
+  visible: true
+  status: in-development
+  order: 50
+  hue: 350
+  glyph: shield
+  art: message-check
+  audience: Families, caregivers, and community organizations
+  examples:
+    - Family scam-prevention guides
+    - Online safety checklists
+    - Self-paced digital courses
+    - Family technology toolkits

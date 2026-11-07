@@ -1,0 +1,108 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  SOLUTIONS — offerings organized around customer problems.
+#
+#  A solution is shown only while at least one of its `businesses` is visible.
+#  Products: all public products of those lines appear automatically; list ids
+#  in `products` to pin a specific selection instead.
+#  `tasks` also power the task finder in the homepage hero.
+#  icon: bolt | globe | layers | grid | shield | file | calendar | book | tool
+# ─────────────────────────────────────────────────────────────────────────────
+
+- id: automate-repetitive-tasks
+  title: Automate repetitive tasks
+  summary: Hand the copy-and-paste work to software and keep the judgment calls for yourself.
+  problem: >-
+    The same steps, every day: downloading attachments, retyping details into
+    another system, renaming files, chasing the next step. None of it is hard,
+    but it adds up, and small errors creep in.
+  approach:
+    - Pull key details out of documents into structured fields you can review before anything is saved
+    - Chain routine steps into workflows that run the same way every time
+    - Start from reusable automation templates instead of a blank canvas
+  tasks:
+    - Pull key details out of invoices and forms
+    - Rename and file scanned documents
+    - Turn a manual routine into a repeatable workflow
+  businesses: [operations-software, templates-and-tools]
+  icon: bolt
+  order: 10
+  keywords: [automation, workflow, documents, data entry, ai, extraction, ocr]
+
+- id: manage-websites
+  title: Keep websites in good shape
+  summary: Make routine WordPress administration faster, tidier, and easier to hand off.
+  problem: >-
+    Sites accumulate clutter: forgotten PDFs, outdated plugins, stale accounts.
+    Keeping on top of it is tedious, so it tends to happen only when something
+    breaks.
+  approach:
+    - See what is actually on your site — documents, media, and where they are used
+    - Turn maintenance into a short routine you can repeat and delegate
+    - Tools that work the same way across many sites, for agencies and freelancers
+  tasks:
+    - Find every PDF and document on a WordPress site
+    - Keep plugin updates and backups on a schedule
+    - Audit user accounts and admin access
+  businesses: [wordpress-plugins]
+  icon: globe
+  order: 20
+  keywords: [wordpress, plugin, maintenance, website, pdf, media, agency, admin]
+
+- id: organize-business-operations
+  title: Organize business operations
+  summary: Give recurring admin a home, a schedule, and a checklist.
+  problem: >-
+    Deadlines live in someone's head, employee paperwork is spread across
+    inboxes and folders, and every year the same tasks get rediscovered from
+    scratch.
+  approach:
+    - Calendars that put recurring obligations in one place
+    - Checklists for routines like onboarding and year-end
+    - Folder structures and templates that make documents easy to find
+  tasks:
+    - Track employee paperwork and renewal dates
+    - Plan the year's recurring admin deadlines
+    - Set up an onboarding checklist for new hires
+  businesses: [employer-toolkits, operations-software]
+  icon: calendar
+  order: 30
+  keywords: [employer, hr, deadlines, calendar, checklist, onboarding, documents, small business]
+
+- id: ready-made-digital-tools
+  title: Get ready-made digital tools
+  summary: Skip the blank page with templates and calculators built for a specific job.
+  problem: >-
+    Building a good spreadsheet, calculator, or planning system from scratch
+    takes hours you would rather spend on the work itself.
+  approach:
+    - Templates designed around one job, with instructions included
+    - Calculators that show their working, so you can trust the numbers
+    - Workflow templates you can adapt to the tools you already use
+  tasks:
+    - Find a ready-made planning template
+    - Estimate a project price with a calculator
+    - Start from a reusable AI workflow template
+  businesses: [templates-and-tools]
+  icon: grid
+  order: 40
+  keywords: [template, spreadsheet, calculator, planner, workflow, download, notion, excel, google sheets]
+
+- id: family-digital-safety
+  title: Improve your family's digital safety
+  summary: Help everyone at home recognize scams and build safer habits online.
+  problem: >-
+    Scams keep evolving, and the people most likely to be targeted are often the
+    least comfortable asking for help. Families need clear, practical guidance
+    they can share with each other.
+  approach:
+    - Plain-language guides to recognizing common scam patterns
+    - Checklists for securing accounts and devices
+    - Resources designed to be shared across generations
+  tasks:
+    - Spot the warning signs of a scam message
+    - Secure the family's most important accounts
+    - Talk with older relatives about online fraud
+  businesses: [family-tech-safety]
+  icon: shield
+  order: 50
+  keywords: [scam, fraud, phishing, safety, security, family, parents, seniors, passwords]

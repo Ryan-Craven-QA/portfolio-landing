@@ -1,0 +1,193 @@
+---
+import UpdatesSection from '../../components/home/UpdatesSection.astro';
+import LineGlyph from '../../components/brand/LineGlyph.astro';
+import ProductCard from '../../components/products/ProductCard.astro';
+import StatusBoard from '../../components/products/StatusBoard.astro';
+import Button from '../../components/ui/Button.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import FilterChips from '../../components/ui/FilterChips.astro';
+import Icon from '../../components/ui/Icon.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../lib/catalog.ts';
+import { pluralize } from '../../lib/format.ts';
+import { routes } from '../../lib/routes.ts';
+import { AVAILABILITY, PRODUCT_TYPES } from '../../lib/schemas/content.ts';
+import { breadcrumbLd } from '../../lib/seo.ts';
+
+const { lines, products, resources } = await getCatalog();
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+
+const count = <T,>(list: T[], pick: (item: T) => string) =>
+  list.reduce((map, item) => map.set(pick(item), (map.get(pick(item)) ?? 0) + 1), new Map<string, number>());
+const byLine = count(products, (p) => p.line.id);
+const byType = count(products, (p) => p.type);
+const byAvailability = count(products, (p) => p.availability);
+const hasFree = products.some((p) => p.isFree);
+const hasPaid = products.some((p) => !p.isFree && p.priceSummary !== null);
+
+const lineOptions = lines.filter((line) => byLine.has(line.id)).map((line) => ({ value: line.id, label: line.name, count: byLine.get(line.id) ?? 0, hue: line.hue }));
+const typeOptions = (Object.keys(PRODUCT_TYPES) as Array<keyof typeof PRODUCT_TYPES>)
+  .filter((type) => byType.has(type))
+  .map((type) => ({ value: type, label: PRODUCT_TYPES[type], count: byType.get(type) ?? 0 }));
+const availabilityOptions = (Object.keys(AVAILABILITY) as Array<keyof typeof AVAILABILITY>)
+  .filter((key) => byAvailability.has(key))
+  .map((key) => ({ value: key, label: AVAILABILITY[key], count: byAvailability.get(key) ?? 0 }));
+
+const description =
+  products.length > 0
+    ? `Software, plugins, templates, toolkits, and guides — ${pluralize(products.length, 'product')} across ${pluralize(lineOptions.length, 'product line')}.`
+    : 'Software, plugins, templates, toolkits, and guides. The first releases are in development — here is where each product line stands.';
+---
+
+<BaseLayout
+  title="Products"
+  description={products.length > 0 ? `Browse ${pluralize(products.length, 'product')} from ${site.name}: software, plugins, templates, toolkits, and guides.` : `Products from ${site.name}: software, plugins, templates, toolkits, and guides — and where each product line stands.`}
+  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Products', href: routes.products }], siteUrl)]}
+>
+  <PageHeader eyebrow="Products" title="The catalog." description={description} breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Products' }]} />
+
+  {
+    products.length === 0 ? (
+      <section class="container-site section" aria-labelledby="catalog-empty-title">
+        <div class="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-14">
+          <EmptyState icon="tool" eyebrow="Nothing for sale yet" title="No products have been released yet." headingId="catalog-empty-title">
+            <p>Every product line below is in active development. Rather than list placeholders, this catalog stays empty until something is genuinely ready to use.</p>
+            <p>When a product launches it appears here with its pricing, documentation, and a working checkout.</p>
+            <Fragment slot="actions">
+              <Button href="#updates" arrow="right">
+                Get release updates
+              </Button>
+              {resources.length > 0 && (
+                <Button href={routes.resources} variant="secondary">
+                  Free resources
+                </Button>
+              )}
+            </Fragment>
+          </EmptyState>
+          {lines.length > 0 && <StatusBoard lines={lines} products={products} />}
+        </div>
+      </section>
+    ) : (
+      <section class="container-site py-10 md:py-14" aria-label="Product catalog">
+        <div class="grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-12">
+          <details class="group/filters" data-filter-panel data-requires-js>
+            <summary class="flex cursor-pointer list-none items-center justify-between rounded-[var(--radius-control)] border border-line px-4 py-3 text-sm font-medium lg:hidden [&::-webkit-details-marker]:hidden">
+              <span class="flex items-center gap-2">
+                <Icon name="sliders" size={16} /> Filters
+              </span>
+              <Icon name="chevron-down" size={16} class="transition-transform group-open/filters:rotate-180" />
+            </summary>
+            <form
+              id="catalog-filters"
+              class="mt-5 space-y-8 lg:sticky lg:top-24 lg:mt-0"
+              data-filter-form
+              data-filter-target="#product-grid"
+              data-filter-scope="catalog"
+              data-default-sort="featured:asc"
+              data-noun="product"
+              role="search"
+              aria-label="Filter products"
+            >
+              <div>
+                <label for="catalog-search" class="eyebrow mb-3 block">
+                  Search
+                </label>
+                <div class="relative">
+                  <Icon name="search" size={16} class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-3" />
+                  <input id="catalog-search" name="q" type="search" placeholder="Name, task, format…" autocomplete="off" class="input pl-9" />
+                </div>
+              </div>
+              {lineOptions.length > 1 && <FilterChips name="line" legend="Product line" options={lineOptions} />}
+              {typeOptions.length > 1 && <FilterChips name="type" legend="Type" options={typeOptions} />}
+              {hasFree && hasPaid && (
+                <FilterChips
+                  name="price"
+                  legend="Price"
+                  options={[
+                    { value: 'free', label: 'Free' },
+                    { value: 'paid', label: 'Paid' },
+                  ]}
+                />
+              )}
+              {availabilityOptions.length > 1 && <FilterChips name="availability" legend="Availability" options={availabilityOptions} />}
+              <button type="button" class="link hidden text-sm group-has-[[data-filtered]]/filters:inline" data-filter-reset="catalog">
+                Clear filters
+              </button>
+            </form>
+          </details>
+
+          <div class="min-w-0">
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+              <p class="mono text-sm text-ink-2" data-filter-count="catalog" aria-live="polite">
+                {pluralize(products.length, 'product')}
+              </p>
+              <label class="flex items-center gap-3 text-sm text-ink-3" data-requires-js>
+                Sort
+                <select name="sort" form="catalog-filters" class="input h-9 min-h-0 w-auto py-1 text-sm">
+                  <option value="featured:asc">Featured</option>
+                  <option value="date:desc">Newest</option>
+                  <option value="price:asc">Price: low to high</option>
+                  <option value="price:desc">Price: high to low</option>
+                  <option value="name:asc">Name A–Z</option>
+                </select>
+              </label>
+            </div>
+            <div id="product-grid" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard product={product} filterable headingLevel="h2" />
+              ))}
+            </div>
+            <div data-filter-empty="catalog" hidden class="mt-6">
+              <EmptyState icon="search" title="No products match those filters." headingLevel="h2">
+                <p>Try a different search term, or clear the filters to see everything.</p>
+                <Fragment slot="actions">
+                  <button type="button" class="btn btn-secondary" data-filter-reset="catalog">
+                    Clear filters
+                  </button>
+                </Fragment>
+              </EmptyState>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    lines.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="lines-heading">
+        <div class="container-site py-14 md:py-20">
+          <h2 id="lines-heading" class="eyebrow mb-6">
+            Browse by product line
+          </h2>
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {lines.map((line) => (
+              <li>
+                <a href={line.url} class="card card-interactive group flex items-center gap-4 p-4" style={`--tone-h: ${line.hue}`}>
+                  <LineGlyph glyph={line.glyph} hue={line.hue} />
+                  <span class="min-w-0 flex-1">
+                    <span class="block font-medium text-ink">{line.name}</span>
+                    <span class="block text-sm text-ink-3">{byLine.has(line.id) ? pluralize(byLine.get(line.id) ?? 0, 'product') : line.statusLabel}</span>
+                  </span>
+                  <Icon name="arrow-right" size={16} class="text-ink-3 transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {products.length === 0 && <UpdatesSection flush />}
+</BaseLayout>
+
+<script>
+  import { initListFilter } from '../../scripts/list-filter.ts';
+  // Filters start collapsed on small screens and open on desktop.
+  if (matchMedia('(min-width: 64rem)').matches) {
+    document.querySelectorAll<HTMLDetailsElement>('[data-filter-panel]').forEach((panel) => (panel.open = true));
+  }
+  document.querySelectorAll<HTMLFormElement>('[data-filter-form]').forEach(initListFilter);
+</script>

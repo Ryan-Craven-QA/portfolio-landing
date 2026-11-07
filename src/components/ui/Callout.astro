@@ -1,0 +1,30 @@
+---
+/** Inline notice for disclaimers and important context. Usable in MDX too. */
+import type { IconName } from '../../lib/icons.ts';
+import Icon from './Icon.astro';
+
+interface Props {
+  tone?: 'info' | 'caution';
+  icon?: IconName;
+  title?: string | undefined;
+  class?: string;
+}
+
+const { tone = 'info', icon = tone === 'caution' ? 'alert' : 'info', title, class: className } = Astro.props;
+---
+
+<aside
+  class:list={[
+    'flex gap-3 rounded-[var(--radius-control)] border p-4 text-[0.9375rem]',
+    tone === 'caution'
+      ? 'border-[color-mix(in_oklch,var(--caution)_40%,transparent)] bg-[color-mix(in_oklch,var(--caution)_7%,transparent)]'
+      : 'border-line bg-surface-2/60',
+    className,
+  ]}
+>
+  <Icon name={icon} size={18} class:list={['mt-0.5', tone === 'caution' ? 'text-caution' : 'text-ink-3']} />
+  <div class="text-ink-2 [&_a]:link">
+    {title && <p class="mb-1 font-semibold text-ink">{title}</p>}
+    <slot />
+  </div>
+</aside>

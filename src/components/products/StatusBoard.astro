@@ -1,0 +1,43 @@
+---
+/**
+ * An honest "where things stand" board: each visible product line with its
+ * real development status and how many products are available. No dates,
+ * percentages or invented progress.
+ */
+import type { Line, Product } from '../../lib/catalog.ts';
+import LineGlyph from '../brand/LineGlyph.astro';
+
+interface Props {
+  lines: Line[];
+  products: Product[];
+  class?: string;
+}
+
+const { lines, products, class: className } = Astro.props;
+---
+
+<div class:list={['card overflow-hidden', className]}>
+  <div class="flex items-center justify-between border-b border-line bg-surface-2/50 px-5 py-3">
+    <span class="eyebrow">Status board</span>
+    <span class="eyebrow" aria-hidden="true">Live from the catalog</span>
+  </div>
+  <ul class="divide-y divide-line">
+    {
+      lines.map((line) => {
+        const count = products.filter((product) => product.line.id === line.id).length;
+        return (
+          <li style={`--tone-h: ${line.hue}`}>
+            <a href={line.url} class="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2/60">
+              <LineGlyph glyph={line.glyph} hue={line.hue} size="sm" />
+              <span class="min-w-0 truncate font-medium text-ink md:shrink-0">{line.name}</span>
+              <span class="min-w-6 h-px flex-1 border-t border-dashed border-line-strong" aria-hidden="true" />
+              <span class="mono shrink-0 text-right text-xs tracking-wide text-ink-2 uppercase">
+                {count > 0 ? `${count} available` : line.statusLabel}
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</div>

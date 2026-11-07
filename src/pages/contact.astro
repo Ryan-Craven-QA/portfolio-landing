@@ -1,0 +1,154 @@
+---
+import ContactForm from '../components/forms/ContactForm.astro';
+import Button from '../components/ui/Button.astro';
+import ConfigNotice from '../components/ui/ConfigNotice.astro';
+import EmptyState from '../components/ui/EmptyState.astro';
+import FaqList from '../components/ui/FaqList.astro';
+import Icon from '../components/ui/Icon.astro';
+import PageHeader from '../components/ui/PageHeader.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { IconName } from '../lib/icons.ts';
+import { CAN_CONTACT, contactEmail, getCatalog, site } from '../lib/catalog.ts';
+import { routes } from '../lib/routes.ts';
+import { breadcrumbLd } from '../lib/seo.ts';
+
+const { faqs } = await getCatalog();
+const hasForm = site.contact.form.provider !== 'none';
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+
+const channels: Array<{ topic: 'general' | 'support' | 'business'; icon: IconName; title: string; body: string }> = [
+  { topic: 'general', icon: 'message', title: 'General inquiries', body: 'Questions about the studio, a product line, or anything else.' },
+  { topic: 'support', icon: 'lifebuoy', title: 'Product support', body: 'Help with a product you use — setup, problems, or how to do something.' },
+  { topic: 'business', icon: 'building', title: 'Business inquiries', body: 'Organization and agency licensing, partnerships, and custom requests.' },
+];
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Contact ${site.name} for general questions, product support, or business and licensing inquiries.`}
+  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Contact', href: routes.contact }], siteUrl)]}
+>
+  <PageHeader
+    eyebrow="Contact"
+    title="Get in touch."
+    description="A question about a product, help with something you’re using, or a business inquiry — here’s how to reach us."
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
+  />
+
+  <section class="container-site py-12 md:py-16" aria-label="Ways to get in touch">
+    <ul class="grid gap-4 md:grid-cols-3">
+      {
+        channels.map((channel) => {
+          const email = contactEmail(channel.topic);
+          return (
+            <li class="card flex flex-col p-6">
+              <span class="grid size-10 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
+                <Icon name={channel.icon} size={19} />
+              </span>
+              <h2 class="mt-5 text-lg font-[620] text-ink">{channel.title}</h2>
+              <p class="mt-2 text-[0.9375rem] text-ink-2">{channel.body}</p>
+              <div class="mt-auto space-y-2 pt-6 text-sm">
+                {hasForm && (
+                  <a href={`?topic=${channel.topic}#contact-form`} data-topic-link={channel.topic} class="flex items-center gap-2 font-medium text-ink hover:text-accent">
+                    <Icon name="arrow-down" size={14} /> Use the form
+                  </a>
+                )}
+                {email && (
+                  <a href={`mailto:${email}`} class="link flex items-center gap-2 break-all">
+                    <Icon name="mail" size={14} /> {email}
+                  </a>
+                )}
+                {!hasForm && !email && <p class="text-ink-3">Not available yet.</p>}
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+    {
+      site.contact.responseTime && CAN_CONTACT && (
+        <p class="mt-6 flex items-center gap-2 text-sm text-ink-3">
+          <Icon name="clock" size={15} /> We usually reply {site.contact.responseTime}.
+        </p>
+      )
+    }
+  </section>
+
+  <section id="contact-form" class="container-site scroll-mt-24 pb-16 md:pb-24" aria-labelledby="form-title">
+    <div class="grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <h2 id="form-title" class="text-display-3 text-ink">{hasForm ? 'Send a message' : CAN_CONTACT ? 'Email us' : 'Contact options'}</h2>
+        <p class="mt-4 text-ink-2">
+          {
+            hasForm
+              ? 'Choose a topic so your message reaches the right place. For support, mention the product you’re using.'
+              : CAN_CONTACT
+                ? 'Use the email address for your topic above.'
+                : 'Ways to reach us are being set up.'
+          }
+        </p>
+        <div class="mt-8 space-y-2 text-sm">
+          <a href={routes.support} class="flex items-center gap-2 text-ink-2 hover:text-ink">
+            <Icon name="lifebuoy" size={15} /> Support center and FAQ
+          </a>
+          <a href={routes.resources} class="flex items-center gap-2 text-ink-2 hover:text-ink">
+            <Icon name="book" size={15} /> Guides and documentation
+          </a>
+        </div>
+      </div>
+      <div class="lg:col-span-8">
+        {
+          hasForm ? (
+            <ContactForm />
+          ) : CAN_CONTACT ? (
+            <EmptyState icon="mail" title="Email is the best way to reach us." headingLevel="h3">
+              <p>Write to the address for your topic above and include as much detail as you can.</p>
+            </EmptyState>
+          ) : (
+            <EmptyState icon="mail" title="Contact channels are being set up." headingLevel="h3">
+              <p>A way to reach us will be available here shortly. In the meantime, the support center answers common questions.</p>
+              <Fragment slot="actions">
+                <Button href={routes.support} variant="secondary">
+                  Visit the support center
+                </Button>
+              </Fragment>
+            </EmptyState>
+          )
+        }
+        <ConfigNotice title={hasForm ? 'Contact form is live' : 'No contact form configured'} class="mt-6">
+          {
+            hasForm ? (
+              <>
+                Messages post directly to your <code>{site.contact.form.provider}</code> form. Send yourself a test before launch.
+              </>
+            ) : (
+              <>
+                Set <code>contact.form</code> (Formspree or Web3Forms) and/or <code>contact.general</code> in <code>src/config/site.ts</code>. Until then
+                visitors have no way to reach you — <code>npm run preflight</code> flags this as a launch blocker.
+              </>
+            )
+          }
+        </ConfigNotice>
+      </div>
+    </div>
+  </section>
+
+  {
+    faqs.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="contact-faq-title">
+        <div class="container-site grid gap-10 py-14 md:py-20 lg:grid-cols-12">
+          <div class="lg:col-span-4">
+            <h2 id="contact-faq-title" class="text-display-3 text-ink">
+              Before you write
+            </h2>
+            <p class="mt-4 text-ink-2">The answer might already be here.</p>
+            <a href={routes.support} class="link mt-6 inline-flex items-center gap-1.5 text-sm">
+              All questions <Icon name="arrow-right" size={14} />
+            </a>
+          </div>
+          <FaqList class="lg:col-span-8" items={faqs.slice(0, 4)} />
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

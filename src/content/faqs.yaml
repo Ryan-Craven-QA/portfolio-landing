@@ -1,0 +1,109 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  FAQ — shown on the Support page.
+#
+#  status: published | draft   (drafts are never shown)
+#  category: general | products | purchasing | support
+#  business: optional product line id; hides the question while that line is hidden
+#
+#  The published answers below only describe how this website works. Answers
+#  that depend on YOUR policies (refunds, licensing, support hours) are left as
+#  drafts for you to write — publish them once they reflect what you offer.
+# ─────────────────────────────────────────────────────────────────────────────
+
+- id: how-purchases-work
+  category: purchasing
+  status: published
+  order: 10
+  question: How do purchases work?
+  answer: >-
+    When a product is available, its button takes you to a secure checkout page
+    hosted by our payment provider. You enter payment details there, not on this
+    website, and the provider sends your receipt.
+
+- id: in-development
+  category: products
+  status: published
+  order: 20
+  question: Some products are marked “In development”. Can I buy them?
+  answer: >-
+    Not yet. Anything marked “In development” or “Coming soon” is still being
+    built and has no checkout. Release news is announced in the updates section
+    on the homepage.
+
+- id: licenses-for-teams
+  category: purchasing
+  status: published
+  order: 30
+  question: Do you offer licenses for teams, organizations, or agencies?
+  answer: >-
+    Where a product supports team, organization, or agency use, those options
+    are listed on its product page next to the individual price. For anything
+    else, get in touch and choose “Business inquiry”.
+  link:
+    label: Contact us
+    href: /contact/?topic=business#contact-form
+
+- id: documentation
+  category: support
+  status: published
+  order: 40
+  question: Where can I find documentation?
+  answer: >-
+    Every product page links to its documentation, and all guides, tutorials,
+    and product docs are collected in the resource library.
+  link:
+    label: Browse the resource library
+    href: /resources/
+
+- id: getting-support
+  category: support
+  status: published
+  order: 50
+  question: How do I get help with a product?
+  answer: >-
+    Use the contact page and choose “Product support”. Include the product name,
+    what you were trying to do, and what happened instead — that makes it much
+    faster to help.
+  link:
+    label: Contact support
+    href: /contact/?topic=support#contact-form
+
+- id: employer-toolkits-advice
+  category: products
+  status: published
+  business: employer-toolkits
+  order: 60
+  question: Are the employer toolkits legal or HR advice?
+  answer: >-
+    No. The toolkits are organizational resources — checklists, calendars, and
+    templates. Requirements vary by location, so confirm your obligations with a
+    qualified professional.
+
+# ── Drafts: write these in your own words, then set status: published ──────
+
+- id: refunds
+  category: purchasing
+  status: draft
+  order: 70
+  question: What is your refund policy?
+  answer: >-
+    DRAFT — describe your actual refund policy here (and link to the full policy
+    page once it is published).
+
+- id: client-work
+  category: purchasing
+  status: draft
+  order: 80
+  question: Can I use templates and tools in work I do for clients?
+  answer: >-
+    DRAFT — explain what each license allows. Keep it consistent with the
+    license names used on product pages.
+
+- id: updates-included
+  category: products
+  status: draft
+  order: 90
+  question: Are updates included with a purchase?
+  answer: >-
+    DRAFT — state how long updates are included for one-time purchases and
+    annual licenses.

@@ -1,0 +1,36 @@
+---
+import Footer from '../components/layout/Footer.astro';
+import Head, { type HeadProps } from '../components/layout/Head.astro';
+import Header from '../components/layout/Header.astro';
+import PreviewBanner from '../components/layout/PreviewBanner.astro';
+import SearchDialog from '../components/search/SearchDialog.astro';
+import JsonLd from '../components/ui/JsonLd.astro';
+import { PREVIEW_DRAFTS, site } from '../lib/catalog.ts';
+import '../styles/global.css';
+
+interface Props extends HeadProps {
+  jsonLd?: Array<Record<string, unknown>>;
+}
+
+const { jsonLd = [], ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.locale.split('-')[0]} data-theme="dark" id="top">
+  <Head {...head}>
+    {jsonLd.length > 0 && <JsonLd data={jsonLd.length === 1 ? jsonLd[0]! : jsonLd} />}
+  </Head>
+  <body class="flex min-h-dvh flex-col">
+    <a href="#main" class="skip-link">Skip to content</a>
+    {PREVIEW_DRAFTS && <PreviewBanner />}
+    <Header />
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
+      <slot />
+    </main>
+    <Footer />
+    <SearchDialog />
+    <script>
+      import '../scripts/site.ts';
+    </script>
+  </body>
+</html>

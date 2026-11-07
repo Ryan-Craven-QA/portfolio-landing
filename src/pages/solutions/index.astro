@@ -1,0 +1,47 @@
+---
+import SolutionRow from '../../components/solutions/SolutionRow.astro';
+import Button from '../../components/ui/Button.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../lib/catalog.ts';
+import { routes } from '../../lib/routes.ts';
+import { breadcrumbLd } from '../../lib/seo.ts';
+
+const { solutions } = await getCatalog();
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+---
+
+<BaseLayout
+  title="Solutions"
+  description={`Find the right ${site.name} tools by the problem you need solved — from automating repetitive tasks to keeping websites and family devices safe.`}
+  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Solutions', href: routes.solutions }], siteUrl)]}
+>
+  <PageHeader
+    eyebrow="Solutions"
+    title="Start from the problem."
+    description="Pick the job you need done. Each solution shows which product lines help and which products are available today."
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Solutions' }]}
+  />
+
+  <section class="container-site section !pt-10" aria-label="Solutions">
+    {
+      solutions.length > 0 ? (
+        <div class="divide-y divide-line border-y border-line">
+          {solutions.map((solution, i) => (
+            <SolutionRow solution={solution} index={i} headingLevel="h2" class="reveal" style={`--i: ${i}`} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState icon="layers" title="Solutions will appear here as product lines launch.">
+          <p>Each solution groups products around a specific problem. None are listed yet.</p>
+          <Fragment slot="actions">
+            <Button href={routes.resources} variant="secondary">
+              Browse free resources
+            </Button>
+          </Fragment>
+        </EmptyState>
+      )
+    }
+  </section>
+</BaseLayout>

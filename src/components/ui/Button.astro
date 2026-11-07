@@ -1,0 +1,63 @@
+---
+/**
+ * Button or link styled as a button.
+ * - `href` renders an <a>; otherwise a <button>.
+ * - `external` marks off-site links (adds an icon + screen-reader hint).
+ */
+import type { HTMLAttributes } from 'astro/types';
+import type { IconName } from '../../lib/icons.ts';
+import Icon from './Icon.astro';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'accent';
+type Size = 'sm' | 'md' | 'lg';
+
+interface Props extends Omit<HTMLAttributes<'a'> & HTMLAttributes<'button'>, 'type'> {
+  href?: string | undefined;
+  variant?: Variant;
+  size?: Size;
+  icon?: IconName | undefined;
+  /** Trailing arrow: "right" (internal) or "diag" (external). */
+  arrow?: 'right' | 'diag' | false;
+  external?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  arrow = false,
+  external = false,
+  type = 'button',
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = ['btn', `btn-${variant}`, size !== 'md' && `btn-${size}`, className];
+const iconSize = size === 'sm' ? 15 : 17;
+const trailing = arrow || (external ? 'diag' : false);
+---
+
+{
+  href ? (
+    <a href={href} class:list={classes} rel={external ? 'noopener' : undefined} {...rest}>
+      {icon && <Icon name={icon} size={iconSize} />}
+      <span>
+        <slot />
+      </span>
+      {trailing === 'right' && <Icon name="arrow-right" size={iconSize} class="btn-arrow" />}
+      {trailing === 'diag' && <Icon name="arrow-up-right" size={iconSize} class="btn-arrow btn-arrow-diag" />}
+      {external && <span class="sr-only"> (opens an external site)</span>}
+    </a>
+  ) : (
+    <button type={type} class:list={classes} {...rest}>
+      {icon && <Icon name={icon} size={iconSize} />}
+      <span>
+        <slot />
+      </span>
+      {trailing === 'right' && <Icon name="arrow-right" size={iconSize} class="btn-arrow" />}
+    </button>
+  )
+}

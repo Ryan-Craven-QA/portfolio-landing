@@ -1,0 +1,16 @@
+---
+/**
+ * Privacy-friendly analytics, only when configured in src/config/site.ts and
+ * only in production builds. All supported providers are cookieless.
+ * The Content-Security-Policy allows exactly the configured provider's hosts.
+ */
+import { site } from '../../lib/catalog.ts';
+
+const analytics = site.analytics;
+const enabled = import.meta.env.PROD;
+const beacon = analytics.provider === 'cloudflare' && analytics.token ? JSON.stringify({ token: analytics.token }) : null;
+---
+
+{enabled && beacon && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={beacon} />}
+{enabled && analytics.provider === 'plausible' && <script is:inline defer data-domain={analytics.domain} src={analytics.src} />}
+{enabled && analytics.provider === 'umami' && <script is:inline defer src={analytics.src} data-website-id={analytics.websiteId} />}

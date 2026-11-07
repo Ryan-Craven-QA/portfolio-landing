@@ -1,0 +1,42 @@
+---
+/**
+ * Considered empty state: says plainly what is (and isn't) here, and offers a
+ * useful next step. Never filled with placeholder content.
+ */
+import type { IconName } from '../../lib/icons.ts';
+import CornerMarks from './CornerMarks.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  icon?: IconName;
+  eyebrow?: string;
+  title: string;
+  headingLevel?: 'h2' | 'h3';
+  headingId?: string | undefined;
+  class?: string;
+}
+
+const { icon = 'layers', eyebrow, title, headingLevel: Heading = 'h2', headingId, class: className } = Astro.props;
+---
+
+<div class:list={['relative overflow-hidden rounded-[var(--radius-card)] border border-dashed border-line-strong bg-surface/40', className]}>
+  <CornerMarks />
+  <div class="dot-grid pointer-events-none absolute inset-0 opacity-50 [mask-image:linear-gradient(to_bottom,#000,transparent_70%)]" aria-hidden="true"></div>
+  <div class="relative flex flex-col items-start gap-5 p-7 sm:p-10 md:p-12">
+    <span class="inline-grid size-11 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
+      <Icon name={icon} size={20} />
+    </span>
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <Heading id={headingId} class="max-w-[30ch] text-display-3 text-ink">{title}</Heading>
+    <div class="max-w-[38rem] text-ink-2 [&_p+p]:mt-3">
+      <slot />
+    </div>
+    {
+      Astro.slots.has('actions') && (
+        <div class="mt-2 flex flex-wrap gap-3">
+          <slot name="actions" />
+        </div>
+      )
+    }
+  </div>
+</div>

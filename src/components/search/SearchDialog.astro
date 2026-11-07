@@ -1,0 +1,80 @@
+---
+/** ⌘K search. Behaviour lives in src/scripts/search-dialog.ts. */
+import { getCatalog } from '../../lib/catalog.ts';
+import { routes } from '../../lib/routes.ts';
+import Icon from '../ui/Icon.astro';
+
+const { lines, solutions } = await getCatalog();
+const suggestions = [
+  { label: 'All products', href: routes.products, icon: 'grid' as const },
+  ...solutions.slice(0, 3).map((solution) => ({ label: solution.title, href: solution.url, icon: 'arrow-right' as const })),
+  { label: 'Resource library', href: routes.resources, icon: 'book' as const },
+  { label: 'Contact', href: routes.contact, icon: 'mail' as const },
+];
+---
+
+<dialog
+  id="search-dialog"
+  aria-label="Search the site"
+  data-index={routes.searchIndex}
+  class="m-0 mx-auto mt-[min(12vh,7rem)] w-[calc(100%-2rem)] max-w-xl overflow-visible bg-transparent p-0 backdrop:bg-[var(--overlay)] backdrop:backdrop-blur-sm"
+>
+  <div class="overflow-hidden rounded-2xl border border-line-strong bg-surface shadow-[var(--shadow-2)]">
+    <div class="flex items-center gap-3 border-b border-line px-4">
+      <Icon name="search" size={18} class="text-ink-3" />
+      <label for="search-input" class="sr-only">Search products, solutions and resources</label>
+      <input
+        id="search-input"
+        data-search-input
+        type="search"
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="search-results"
+        aria-autocomplete="list"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search products, solutions, resources…"
+        class="h-14 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-3 [&::-webkit-search-cancel-button]:hidden"
+      />
+      <button type="button" class="kbd h-6 px-1.5" data-search-close aria-label="Close search">Esc</button>
+    </div>
+
+    <div class="max-h-[min(60vh,28rem)] overflow-y-auto p-2" data-search-scroll>
+      <div data-search-suggestions>
+        <p class="eyebrow px-3 pt-3 pb-2">Jump to</p>
+        <ul>
+          {
+            suggestions.map((item) => (
+              <li>
+                <a href={item.href} class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">
+                  <Icon name={item.icon} size={16} class="text-ink-3" />
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          {
+            lines.map((line) => (
+              <li>
+                <a href={line.url} class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink" style={`--tone-h: ${line.hue}`}>
+                  <span class="mx-[0.3rem] size-2 rounded-full bg-tone" aria-hidden="true" />
+                  {line.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div id="search-results" role="listbox" aria-label="Search results" data-search-results></div>
+      <p data-search-empty hidden class="px-3 py-10 text-center text-ink-3">No matches. Try a different word, or browse <a href={routes.products} class="link">all products</a>.</p>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 border-t border-line bg-surface-2/50 px-4 py-2.5 text-xs text-ink-3">
+      <span class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1"><kbd class="kbd"><Icon name="arrow-up" size={11} /></kbd><kbd class="kbd"><Icon name="arrow-down" size={11} /></kbd> navigate</span>
+        <span class="inline-flex items-center gap-1"><kbd class="kbd"><Icon name="corner-down-left" size={11} /></kbd> open</span>
+      </span>
+      <span data-search-status aria-live="polite" class="tabular"></span>
+    </div>
+  </div>
+</dialog>

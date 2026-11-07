@@ -1,0 +1,171 @@
+---
+import LineGlyph from '../../components/brand/LineGlyph.astro';
+import UpdatesSection from '../../components/home/UpdatesSection.astro';
+import ProductCard from '../../components/products/ProductCard.astro';
+import ResourceCard from '../../components/resources/ResourceCard.astro';
+import Button from '../../components/ui/Button.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import Icon from '../../components/ui/Icon.astro';
+import LineStatusBadge from '../../components/ui/LineStatusBadge.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../lib/catalog.ts';
+import { routes } from '../../lib/routes.ts';
+import { breadcrumbLd } from '../../lib/seo.ts';
+
+export async function getStaticPaths() {
+  const { solutions } = await getCatalog();
+  return solutions.map((solution) => ({ params: { solution: solution.id }, props: { solutionId: solution.id } }));
+}
+
+const { solutionId } = Astro.props;
+const { solutions, resources } = await getCatalog();
+const solution = solutions.find((s) => s.id === solutionId)!;
+const lineIds = new Set(solution.lines.map((line) => line.id));
+const related = resources.filter((resource) => resource.line && lineIds.has(resource.line.id)).slice(0, 3);
+const others = solutions.filter((s) => s.id !== solution.id);
+const hue = solution.lines[0]?.hue ?? 50;
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Solutions', href: routes.solutions },
+  { label: solution.title, href: solution.url },
+];
+---
+
+<BaseLayout
+  title={solution.seo?.title ?? solution.title}
+  description={solution.seo?.description ?? `${solution.summary} How ${site.name} tools help: ${solution.lines.map((l) => l.name).join(', ')}.`}
+  jsonLd={[breadcrumbLd(crumbs, siteUrl)]}
+>
+  <PageHeader eyebrow="Solution" title={solution.title} description={solution.summary} breadcrumbs={[...crumbs.slice(0, -1), { label: solution.title }]}>
+    <ul class="flex flex-wrap gap-2">
+      {
+        solution.lines.map((line) => (
+          <li>
+            <a href={line.url} class="chip" style={`--tone-h: ${line.hue}`}>
+              <span class="size-1.5 rounded-full bg-tone" aria-hidden="true" />
+              {line.name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </PageHeader>
+
+  <section class="container-site section" style={`--tone-h: ${hue}`} aria-labelledby="situation-title">
+    <div class="grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="situation-title" class="eyebrow">The situation</h2>
+        <p class="mt-5 text-display-3 text-ink">{solution.problem}</p>
+      </div>
+      <div class="lg:col-span-6 lg:col-start-7">
+        <h2 class="eyebrow">How we approach it</h2>
+        <ol class="mt-5 space-y-5">
+          {
+            solution.approach.map((step, i) => (
+              <li class="flex gap-4">
+                <span class="mono mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border border-[var(--tone-line)] bg-[var(--tone-soft)] text-xs text-tone">
+                  {i + 1}
+                </span>
+                <span class="text-ink-2">{step}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <h2 class="eyebrow mt-12">Typical tasks</h2>
+        <ul class="mt-5 grid gap-2 sm:grid-cols-1">
+          {
+            solution.tasks.map((task) => (
+              <li class="flex items-center gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-[0.9375rem] text-ink-2">
+                <Icon name="check" size={15} class="text-tone" />
+                {task}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-line" aria-labelledby="solution-products-title">
+    <div class="container-site section">
+      <h2 id="solution-products-title" class="text-display-3 text-ink">Products for this</h2>
+      {
+        solution.products.length > 0 ? (
+          <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {solution.products.map((product) => (
+              <ProductCard product={product} />
+            ))}
+          </div>
+        ) : (
+          <div class="mt-10 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+            <EmptyState icon="tool" title="Products for this solution are in development." headingLevel="h3">
+              <p>Nothing is available to buy for this yet. The product lines listed here are where these tools will come from.</p>
+              <Fragment slot="actions">
+                <Button href="#updates" arrow="right">
+                  Get release updates
+                </Button>
+              </Fragment>
+            </EmptyState>
+            <ul class="space-y-3">
+              {solution.lines.map((line) => (
+                <li>
+                  <a href={line.url} class="card card-interactive group flex items-center gap-4 p-5" style={`--tone-h: ${line.hue}`}>
+                    <LineGlyph glyph={line.glyph} hue={line.hue} />
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-medium text-ink">{line.name}</span>
+                      <span class="block text-sm text-ink-3">{line.tagline}</span>
+                    </span>
+                    <LineStatusBadge line={line} always />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="solution-resources-title">
+        <div class="container-site section">
+          <h2 id="solution-resources-title" class="text-display-3 text-ink">
+            Free guides on this
+          </h2>
+          <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {related.map((resource) => (
+              <ResourceCard resource={resource} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    others.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="other-solutions-title">
+        <div class="container-site py-14">
+          <h2 id="other-solutions-title" class="eyebrow mb-5">
+            Other solutions
+          </h2>
+          <ul class="flex flex-wrap gap-2">
+            {others.map((other) => (
+              <li>
+                <a href={other.url} class="chip" style={`--tone-h: ${other.lines[0]?.hue ?? 50}`}>
+                  <span class="size-1.5 rounded-full bg-tone" aria-hidden="true" />
+                  {other.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {solution.products.length === 0 && <UpdatesSection flush />}
+</BaseLayout>

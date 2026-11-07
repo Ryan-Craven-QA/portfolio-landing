@@ -1,0 +1,140 @@
+---
+import { contactEmail, getCatalog, getLegalLinks, site } from '../../lib/catalog.ts';
+import { routes } from '../../lib/routes.ts';
+import LogoMark from '../brand/LogoMark.astro';
+import Icon from '../ui/Icon.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+const { lines, resources } = await getCatalog();
+const legalLinks = await getLegalLinks();
+const email = contactEmail('general');
+const hasDocs = resources.some((resource) => resource.type === 'documentation');
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: 'Explore',
+    links: [
+      { label: 'All products', href: routes.products },
+      { label: 'Solutions', href: routes.solutions },
+      { label: 'Resources', href: routes.resources },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { label: 'Support center', href: routes.support },
+      ...(hasDocs ? [{ label: 'Documentation', href: `${routes.resources}?type=documentation` }] : []),
+      { label: 'Contact support', href: routes.contactTopic('support') },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: routes.about },
+      { label: 'Contact', href: routes.contact },
+      { label: 'RSS feed', href: routes.rss },
+    ],
+  },
+];
+---
+
+<footer data-site-footer class="relative mt-auto overflow-hidden border-t border-line bg-canvas">
+  <div class="container-site relative pt-16 pb-10 md:pt-20">
+    <div class="grid gap-12 lg:grid-cols-[1fr_2.2fr]">
+      <div class="max-w-sm">
+        <a href="/" class="inline-flex items-center gap-2.5" aria-label={`${site.name} — home`}>
+          <LogoMark size={22} class="text-ink" />
+          <span class="text-base font-[650] lowercase tracking-[-0.035em] text-ink">{site.name}</span>
+        </a>
+        <p class="mt-4 text-[0.9375rem] text-ink-2">{site.tagline}</p>
+        {
+          email && (
+            <p class="mt-6">
+              <a href={`mailto:${email}`} class="link inline-flex items-center gap-2 text-sm">
+                <Icon name="mail" size={15} />
+                {email}
+              </a>
+            </p>
+          )
+        }
+        {
+          site.social.length > 0 && (
+            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {site.social.map((profile) => (
+                <li>
+                  <a href={profile.url} class="text-ink-2 transition-colors hover:text-ink" rel="me noopener">
+                    {profile.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <div class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        {
+          lines.length > 0 && (
+            <div class="col-span-2 sm:col-span-1">
+              <h2 class="eyebrow mb-4">Product lines</h2>
+              <ul class="space-y-2.5 text-[0.9375rem]">
+                {lines.map((line) => (
+                  <li>
+                    <a href={line.url} class="group inline-flex items-center gap-2 whitespace-nowrap text-ink-2 transition-colors hover:text-ink" style={`--tone-h: ${line.hue}`}>
+                      <span class="size-1.5 rounded-full bg-tone opacity-70 transition-opacity group-hover:opacity-100" aria-hidden="true" />
+                      {line.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+        {
+          columns.map((column) => (
+            <div>
+              <h2 class="eyebrow mb-4">{column.title}</h2>
+              <ul class="space-y-2.5 text-[0.9375rem]">
+                {column.links.map((link) => (
+                  <li>
+                    <a href={link.href} class="text-ink-2 transition-colors hover:text-ink">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="mt-16 flex flex-col gap-4 border-t border-line pt-6 text-sm text-ink-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <span>© {year} {site.legalName ?? site.name}</span>
+        {
+          legalLinks.map((link) => (
+            <a href={link.href} class="transition-colors hover:text-ink">
+              {link.label}
+            </a>
+          ))
+        }
+      </div>
+      <div class="flex items-center gap-2">
+        <ThemeToggle />
+        <a href="#top" class="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors hover:text-ink">
+          <Icon name="arrow-up" size={14} /> Back to top
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pointer-events-none relative -mb-[0.24em] select-none overflow-hidden" aria-hidden="true">
+    <p
+      class="container-site text-center text-[clamp(4.5rem,19vw,17rem)] leading-[0.8] font-[700] lowercase tracking-[-0.06em] text-transparent [background-image:linear-gradient(to_bottom,var(--line-strong),transparent_85%)] [background-clip:text]"
+    >
+      {site.name}
+    </p>
+  </div>
+</footer>

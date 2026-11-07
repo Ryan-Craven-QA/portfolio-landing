@@ -1,0 +1,152 @@
+---
+/**
+ * Contact form. Rendered ONLY when a form provider is configured; it posts
+ * straight to that provider (Formspree or Web3Forms), so no backend is needed
+ * and this site never stores messages. Works without JavaScript (the provider
+ * shows its own confirmation page); with JavaScript it sends in place.
+ */
+import { contactEmail, getCatalog, getLegalLinks, site } from '../../lib/catalog.ts';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+const config = site.contact.form;
+const { products } = await getCatalog();
+const privacy = (await getLegalLinks()).find((link) => link.label === 'Privacy');
+const fallbackEmail = contactEmail('general');
+
+const endpoint =
+  config.provider === 'formspree'
+    ? `https://formspree.io/f/${config.formId}`
+    : config.provider === 'web3forms'
+      ? 'https://api.web3forms.com/submit'
+      : null;
+const providerName = config.provider === 'formspree' ? 'Formspree' : 'Web3Forms';
+const topics = [
+  { value: 'general', label: 'General inquiry' },
+  { value: 'support', label: 'Product support' },
+  { value: 'business', label: 'Business inquiry' },
+];
+---
+
+{
+  endpoint && (
+    <div class="card relative overflow-hidden p-6 sm:p-8" data-contact-root>
+      <form
+        id="contact-form-element"
+        action={endpoint}
+        method="post"
+        class="space-y-6"
+        data-contact-form
+        data-site-name={site.name}
+        data-fallback-email={fallbackEmail}
+      >
+        {config.provider === 'web3forms' && (
+          <>
+            <input type="hidden" name="access_key" value={config.accessKey} />
+            <input type="hidden" name="from_name" value={site.name} />
+          </>
+        )}
+        <input type="hidden" name={config.provider === 'formspree' ? '_subject' : 'subject'} value={`New message — ${site.name}`} data-subject />
+
+        <fieldset>
+          <legend class="field-label">What is this about?</legend>
+          <div class="flex flex-wrap gap-2">
+            {topics.map((topic, i) => (
+              <label class="chip chip-toggle min-h-10 px-4">
+                <input type="radio" class="sr-only" name="topic" value={topic.value} checked={i === 0} required data-topic-label={topic.label} />
+                {topic.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {products.length > 0 && (
+          <div>
+            <label for="contact-product" class="field-label">
+              Product <span class="font-normal text-ink-3">(optional)</span>
+            </label>
+            <select id="contact-product" name="product" class="input">
+              <option value="">Not about a specific product</option>
+              {products.map((product) => (
+                <option value={product.id}>{product.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="contact-name" class="field-label">
+              Name
+            </label>
+            <input id="contact-name" name="name" type="text" required autocomplete="name" maxlength="120" class="input" />
+          </div>
+          <div>
+            <label for="contact-email" class="field-label">
+              Email
+            </label>
+            <input id="contact-email" name="email" type="email" required autocomplete="email" inputmode="email" maxlength="200" class="input" />
+          </div>
+        </div>
+
+        <div>
+          <label for="contact-message" class="field-label">
+            Message
+          </label>
+          <textarea id="contact-message" name="message" required minlength="10" maxlength="5000" rows="6" class="input" aria-describedby="contact-message-hint" />
+          <p id="contact-message-hint" class="field-hint">
+            For product support, include what you were trying to do and what happened instead.
+          </p>
+        </div>
+
+        {config.provider === 'formspree' ? (
+          <div class="hidden" aria-hidden="true">
+            <label>
+              Leave this field empty
+              <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+        ) : (
+          <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        )}
+
+        <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p class="max-w-md text-xs text-ink-3">
+            Messages are delivered through {providerName}. Please don’t include passwords or payment details.
+            {privacy && (
+              <>
+                {' '}
+                <a href={privacy.href} class="link">
+                  Privacy policy
+                </a>
+                .
+              </>
+            )}
+          </p>
+          <Button type="submit" arrow="right" data-submit>
+            Send message
+          </Button>
+        </div>
+        <p class="text-sm" role="status" aria-live="polite" data-form-status />
+      </form>
+
+      <div class="hidden flex-col items-start gap-4 py-6" data-form-success>
+        <span class="grid size-12 place-items-center rounded-xl border border-[color-mix(in_oklch,var(--ok)_40%,transparent)] text-ok" aria-hidden="true">
+          <Icon name="circle-check" size={24} />
+        </span>
+        <h3 class="text-display-3 text-ink" tabindex="-1" data-success-heading>
+          Message sent.
+        </h3>
+        <p class="text-ink-2">
+          Thanks for getting in touch. You’ll get a reply at the email address you provided
+          {site.contact.responseTime ? `, usually ${site.contact.responseTime}` : ''}.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  import { initContactForm } from '../../scripts/contact-form.ts';
+  document.querySelectorAll<HTMLFormElement>('[data-contact-form]').forEach(initContactForm);
+</script>

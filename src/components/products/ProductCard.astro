@@ -1,0 +1,58 @@
+---
+import type { Product } from '../../lib/catalog.ts';
+import Icon from '../ui/Icon.astro';
+import AvailabilityBadge from './AvailabilityBadge.astro';
+import ProductCover from './ProductCover.astro';
+
+interface Props {
+  product: Product;
+  headingLevel?: 'h2' | 'h3';
+  class?: string;
+  style?: string;
+  /** Data attributes used by the catalog filter script. */
+  filterable?: boolean;
+}
+
+const { product, headingLevel: Heading = 'h3', class: className, style, filterable = false } = Astro.props;
+const filterData = filterable
+  ? {
+      'data-filter-item': '',
+      'data-line': product.line.id,
+      'data-type': product.type,
+      'data-price': product.isFree ? 'free' : product.priceSummary ? 'paid' : 'none',
+      'data-availability': product.availability,
+      'data-sort-name': product.name.toLowerCase(),
+      'data-sort-price': Number.isFinite(product.sortPrice) ? String(product.sortPrice) : '',
+      'data-sort-date': String((product.releaseDate ?? product.updatedDate)?.getTime() ?? 0),
+      'data-sort-featured': String(product.featured ? product.featuredOrder : 10_000 + product.featuredOrder),
+      'data-search': [product.name, product.summary, product.line.name, product.typeLabel, ...product.data.tags].join(' '),
+    }
+  : {};
+---
+
+<article
+  class:list={['card card-interactive spotlight group flex flex-col overflow-hidden', className]}
+  style={`--tone-h: ${product.line.hue};${style ?? ''}`}
+  {...filterData}
+>
+  <ProductCover product={product} class="border-b border-line" />
+  <div class="relative flex flex-1 flex-col p-5">
+    <p class="flex items-center gap-2 text-xs text-ink-3">
+      <span class="size-1.5 rounded-full bg-tone" aria-hidden="true"></span>
+      <span>{product.line.name}</span>
+      <span aria-hidden="true">·</span>
+      <span>{product.typeLabel}</span>
+    </p>
+    <Heading class="mt-3 text-lg font-[620] tracking-[-0.015em] text-ink">
+      <a href={product.url} class="card-link">{product.name}</a>
+    </Heading>
+    <p class="mt-2 mb-6 line-clamp-3 text-[0.9375rem] text-ink-2">{product.summary}</p>
+    <div class="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4">
+      <span class="tabular text-[0.9375rem] font-medium text-ink">{product.priceSummary ?? 'Pricing at launch'}</span>
+      <span class="flex items-center gap-2">
+        <AvailabilityBadge product={product} />
+        <Icon name="arrow-right" size={15} class="text-ink-3 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-ink" />
+      </span>
+    </div>
+  </div>
+</article>

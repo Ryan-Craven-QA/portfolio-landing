@@ -1,0 +1,22 @@
+---
+import type { Product } from '../../lib/catalog.ts';
+import Badge, { type BadgeTone } from '../ui/Badge.astro';
+
+interface Props {
+  product: Pick<Product, 'availability' | 'availabilityLabel' | 'isPreview'>;
+  class?: string;
+}
+
+const { product, class: className } = Astro.props;
+const tone: Record<Product['availability'], BadgeTone> = {
+  available: 'live',
+  'early-access': 'beta',
+  'coming-soon': 'soon',
+  unavailable: 'neutral',
+};
+---
+
+<span class:list={['inline-flex flex-wrap gap-1.5', className]}>
+  {product.isPreview && <Badge tone="draft">Draft</Badge>}
+  <Badge tone={tone[product.availability]}>{product.availabilityLabel}</Badge>
+</span>

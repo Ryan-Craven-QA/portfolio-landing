@@ -1,0 +1,162 @@
+---
+/**
+ * Product line landing page — one per PUBLIC product line. Hidden lines are
+ * not returned by getStaticPaths, so their pages are never generated.
+ */
+import LineGlyph from '../../../components/brand/LineGlyph.astro';
+import LineArt from '../../../components/home/LineArt.astro';
+import UpdatesSection from '../../../components/home/UpdatesSection.astro';
+import ProductCard from '../../../components/products/ProductCard.astro';
+import ResourceCard from '../../../components/resources/ResourceCard.astro';
+import SolutionRow from '../../../components/solutions/SolutionRow.astro';
+import Breadcrumbs from '../../../components/ui/Breadcrumbs.astro';
+import Button from '../../../components/ui/Button.astro';
+import Callout from '../../../components/ui/Callout.astro';
+import CornerMarks from '../../../components/ui/CornerMarks.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
+import LineStatusBadge from '../../../components/ui/LineStatusBadge.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../../lib/catalog.ts';
+import { pluralize } from '../../../lib/format.ts';
+import { routes } from '../../../lib/routes.ts';
+import { breadcrumbLd } from '../../../lib/seo.ts';
+
+export async function getStaticPaths() {
+  const { lines } = await getCatalog();
+  return lines.map((line) => ({ params: { line: line.id }, props: { lineId: line.id } }));
+}
+
+const { lineId } = Astro.props;
+const { linesById, products, solutions, resources } = await getCatalog();
+const line = linesById.get(lineId)!;
+const lineProducts = products.filter((product) => product.line.id === line.id);
+const lineSolutions = solutions.filter((solution) => solution.lines.some((l) => l.id === line.id));
+const lineResources = resources.filter((resource) => resource.line?.id === line.id).slice(0, 3);
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Products', href: routes.products },
+  { label: line.name, href: line.url },
+];
+---
+
+<BaseLayout
+  title={line.seo?.title ?? line.name}
+  description={line.seo?.description ?? `${line.name} from ${site.name}: ${line.tagline}`}
+  jsonLd={[breadcrumbLd(crumbs, siteUrl)]}
+>
+  <header class="relative overflow-hidden border-b border-line" style={`--tone-h: ${line.hue}`}>
+    <div class="dot-grid fade-mask-radial pointer-events-none absolute inset-0 opacity-70" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(50%_70%_at_30%_0%,var(--tone-soft),transparent_70%)]" aria-hidden="true"></div>
+    <div class="container-site relative pt-12 pb-14 md:pt-16 md:pb-20">
+      <Breadcrumbs items={[...crumbs.slice(0, -1), { label: line.name }]} class="enter mb-10" />
+      <div class="grid gap-12 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-7">
+          <div class="enter flex flex-wrap items-center gap-3" style="--i: 1">
+            <LineGlyph glyph={line.glyph} hue={line.hue} size="lg" />
+            <LineStatusBadge line={line} />
+          </div>
+          <h1 class="mt-7 text-display-1 text-ink">{line.name}</h1>
+          <p class="mt-5 max-w-[34rem] text-lead text-ink">{line.tagline}</p>
+          <p class="mt-4 max-w-[38rem] text-ink-2">{line.description}</p>
+          {
+            line.audience && (
+              <p class="enter mono mt-7 text-xs tracking-wide text-ink-3 uppercase" style="--i: 5">
+                For · {line.audience}
+              </p>
+            )
+          }
+        </div>
+        <div class="enter relative hidden lg:col-span-5 lg:block" style="--i: 3">
+          <CornerMarks class="-inset-3" />
+          <div class="card overflow-hidden">
+            <LineArt art={line.art} hue={line.hue} class="!min-h-[16rem]" />
+          </div>
+        </div>
+      </div>
+      {line.disclaimer && <Callout tone="caution" class="enter mt-10 max-w-3xl" title="Please note">{line.disclaimer}</Callout>}
+    </div>
+  </header>
+
+  <section class="container-site section" aria-labelledby="line-products-title">
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <h2 id="line-products-title" class="text-display-3 text-ink">
+        {lineProducts.length > 0 ? `${pluralize(lineProducts.length, 'product')}` : 'Products'}
+      </h2>
+      {lineProducts.length > 0 && <Button href={`${routes.products}?line=${line.id}`} variant="secondary" size="sm" arrow="right">Open in catalog</Button>}
+    </div>
+    {
+      lineProducts.length > 0 ? (
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {lineProducts.map((product) => (
+            <ProductCard product={product} class="reveal" />
+          ))}
+        </div>
+      ) : (
+        <div class="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+          <EmptyState icon="tool" title="Nothing in this line has been released yet." headingLevel="h3">
+            <p>This product line is {line.statusLabel.toLowerCase()}. Releases will be listed here with pricing, documentation, and a working checkout as soon as they are ready.</p>
+            <Fragment slot="actions">
+              <Button href="#updates" arrow="right">
+                Get release updates
+              </Button>
+            </Fragment>
+          </EmptyState>
+          <div class="card p-7">
+            <h3 class="eyebrow">What this line will cover</h3>
+            <ul class="mt-5 space-y-3">
+              {line.examples.map((example) => (
+                <li class="flex items-start gap-3 text-ink-2" style={`--tone-h: ${line.hue}`}>
+                  <span class="mt-2 size-1.5 shrink-0 rounded-full bg-tone" aria-hidden="true" />
+                  {example}
+                </li>
+              ))}
+            </ul>
+            <p class="mt-6 text-sm text-ink-3">These describe the kinds of products planned for this line, not products that are available today.</p>
+          </div>
+        </div>
+      )
+    }
+  </section>
+
+  {
+    lineSolutions.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="line-solutions-title">
+        <div class="container-site section">
+          <h2 id="line-solutions-title" class="mb-6 text-display-3 text-ink">
+            Problems this line helps with
+          </h2>
+          <div class="divide-y divide-line border-y border-line">
+            {lineSolutions.map((solution, i) => (
+              <SolutionRow solution={solution} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    lineResources.length > 0 && (
+      <section class="border-t border-line" aria-labelledby="line-resources-title">
+        <div class="container-site section">
+          <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <h2 id="line-resources-title" class="text-display-3 text-ink">
+              Guides and resources
+            </h2>
+            <Button href={routes.resources} variant="secondary" size="sm" arrow="right">
+              All resources
+            </Button>
+          </div>
+          <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {lineResources.map((resource) => (
+              <ResourceCard resource={resource} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {lineProducts.length === 0 && <UpdatesSection flush />}
+</BaseLayout>

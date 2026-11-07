@@ -1,0 +1,106 @@
+---
+import ResourceCard from '../../components/resources/ResourceCard.astro';
+import Button from '../../components/ui/Button.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import FilterChips from '../../components/ui/FilterChips.astro';
+import Icon from '../../components/ui/Icon.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../lib/catalog.ts';
+import { pluralize } from '../../lib/format.ts';
+import { routes } from '../../lib/routes.ts';
+import { RESOURCE_TYPES } from '../../lib/schemas/content.ts';
+import { breadcrumbLd } from '../../lib/seo.ts';
+
+const { resources } = await getCatalog();
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+const counts = new Map<string, number>();
+for (const resource of resources) counts.set(resource.type, (counts.get(resource.type) ?? 0) + 1);
+const typeOptions = (Object.keys(RESOURCE_TYPES) as Array<keyof typeof RESOURCE_TYPES>)
+  .filter((type) => counts.has(type))
+  .map((type) => ({ value: type, label: RESOURCE_TYPES[type], count: counts.get(type) ?? 0 }));
+---
+
+<BaseLayout
+  title="Resources"
+  description={`Free guides, tutorials, downloads, and product documentation from ${site.name} — practical and written in plain language.`}
+  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Resources', href: routes.resources }], siteUrl)]}
+>
+  <PageHeader
+    eyebrow="Resource library"
+    title="Guides, downloads, and docs."
+    description="Practical, plain-language resources. Free to read, free to download, and useful whether or not you ever buy anything."
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Resources' }]}
+  />
+
+  <section class="container-site py-10 md:py-14" aria-label="Resource library">
+    {
+      resources.length === 0 ? (
+        <EmptyState icon="book" title="The library is being written.">
+          <p>Guides, tutorials, and documentation will be published here.</p>
+          <Fragment slot="actions">
+            <Button href={routes.rss} variant="secondary" icon="rss">
+              Follow via RSS
+            </Button>
+          </Fragment>
+        </EmptyState>
+      ) : (
+        <>
+          <form
+            id="resource-filters"
+            class="mb-8 flex flex-col gap-6 border-b border-line pb-8 md:flex-row md:items-end md:justify-between"
+            data-filter-form
+            data-filter-target="#resource-grid"
+            data-filter-scope="resources"
+            data-default-sort="date:desc"
+            data-noun="resource"
+            data-requires-js
+            role="search"
+            aria-label="Filter resources"
+          >
+            {typeOptions.length > 1 ? <FilterChips name="type" legend="Type" options={typeOptions} /> : <div />}
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div class="relative sm:w-72">
+                <label for="resource-search" class="sr-only">
+                  Search resources
+                </label>
+                <Icon name="search" size={16} class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-3" />
+                <input id="resource-search" name="q" type="search" placeholder="Search resources…" autocomplete="off" class="input pl-9" />
+              </div>
+              <label class="flex items-center gap-3 text-sm text-ink-3">
+                <span class="sr-only sm:not-sr-only">Sort</span>
+                <select name="sort" class="input min-h-0 py-2.5 text-sm">
+                  <option value="date:desc">Newest</option>
+                  <option value="name:asc">Title A–Z</option>
+                </select>
+              </label>
+            </div>
+          </form>
+          <p class="mono mb-6 text-sm text-ink-2" data-filter-count="resources" aria-live="polite">
+            {pluralize(resources.length, 'resource')}
+          </p>
+          <div id="resource-grid" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {resources.map((resource) => (
+              <ResourceCard resource={resource} filterable headingLevel="h2" />
+            ))}
+          </div>
+          <div data-filter-empty="resources" hidden class="mt-6">
+            <EmptyState icon="search" title="No resources match that search." headingLevel="h2">
+              <p>Try a different word or clear the filters.</p>
+              <Fragment slot="actions">
+                <button type="button" class="btn btn-secondary" data-filter-reset="resources">
+                  Clear filters
+                </button>
+              </Fragment>
+            </EmptyState>
+          </div>
+        </>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<script>
+  import { initListFilter } from '../../scripts/list-filter.ts';
+  document.querySelectorAll<HTMLFormElement>('[data-filter-form]').forEach(initListFilter);
+</script>

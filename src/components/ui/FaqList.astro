@@ -1,0 +1,46 @@
+---
+/** Accessible FAQ using native <details>/<summary> (works without JavaScript). */
+import Icon from './Icon.astro';
+
+export interface FaqItem {
+  question: string;
+  paragraphs: string[];
+  link?: { label: string; href: string } | undefined;
+}
+
+interface Props {
+  items: FaqItem[];
+  headingLevel?: 'h3' | 'h4';
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<div class:list={['divide-y divide-line border-y border-line', className]}>
+  {
+    items.map((item) => (
+      <details class="group">
+        <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-left text-[1.0625rem] font-[560] text-ink transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
+          <span>{item.question}</span>
+          <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md border border-line text-ink-3 transition-transform duration-300 group-open:rotate-45" aria-hidden="true">
+            <Icon name="plus" size={14} />
+          </span>
+        </summary>
+        <div class="max-w-[46rem] pb-6 pr-10 text-ink-2 [&_p+p]:mt-3">
+          {item.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+          {item.link && (
+            <p class="mt-3">
+              <a href={item.link.href} class="link inline-flex items-center gap-1.5 text-sm font-medium">
+                {item.link.label}
+                <Icon name="arrow-right" size={14} />
+              </a>
+            </p>
+          )}
+        </div>
+      </details>
+    ))
+  }
+</div>

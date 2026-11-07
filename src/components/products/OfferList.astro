@@ -1,0 +1,82 @@
+---
+/** Pricing options for a product, each with its own honest call-to-action. */
+import type { Product } from '../../lib/catalog.ts';
+import { LICENSE_LABELS } from '../../lib/commerce.ts';
+import Badge from '../ui/Badge.astro';
+import Icon from '../ui/Icon.astro';
+import OfferAction from './OfferAction.astro';
+
+interface Props {
+  product: Product;
+  notifyHref: string;
+}
+
+const { product, notifyHref } = Astro.props;
+const multiple = product.offers.length > 1;
+---
+
+{
+  product.offers.length === 0 ? (
+    <div class="rounded-[var(--radius-card)] border border-dashed border-line-strong p-5">
+      <p class="flex items-center gap-2 font-medium text-ink">
+        <Icon name="clock" size={16} class="text-ink-3" />
+        Pricing will be announced at launch.
+      </p>
+      <p class="mt-2 text-sm text-ink-3">There is no checkout for this product yet.</p>
+      <a href={notifyHref} class="link mt-4 inline-flex items-center gap-1.5 text-sm">
+        Get notified when it’s ready <Icon name="arrow-right" size={14} />
+      </a>
+    </div>
+  ) : (
+    <ul class="space-y-3" aria-label="Pricing options">
+      {product.offers.map((offer) => (
+        <li
+          class:list={[
+            'relative rounded-[var(--radius-card)] border p-5',
+            offer.recommended && multiple ? 'border-[color-mix(in_oklch,var(--accent)_55%,transparent)] bg-surface-2' : 'border-line bg-surface',
+          ]}
+          data-offer={offer.id}
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="font-[620] text-ink">{offer.label}</p>
+              {(offer.license || offer.scope) && (
+                <p class="mt-0.5 text-sm text-ink-3">{[offer.license ? LICENSE_LABELS[offer.license] : undefined, offer.scope].filter(Boolean).join(' · ')}</p>
+              )}
+            </div>
+            {offer.recommended && multiple && (
+              <Badge tone="beta" dot={false}>
+                Recommended
+              </Badge>
+            )}
+          </div>
+          <p class="mt-4 flex items-baseline gap-2">
+            <span class="tabular text-[2rem] leading-none font-[650] tracking-[-0.03em] text-ink" aria-hidden="true">
+              {offer.display.amount}
+            </span>
+            {offer.display.suffix && (
+              <span class="text-sm text-ink-3" aria-hidden="true">
+                {offer.display.suffix}
+              </span>
+            )}
+            <span class="sr-only">{offer.display.spoken}</span>
+          </p>
+          {offer.features.length > 0 && (
+            <ul class="mt-4 space-y-2 text-sm text-ink-2">
+              {offer.features.map((feature) => (
+                <li class="flex items-start gap-2.5">
+                  <Icon name="check" size={15} class="mt-0.5 text-ok" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div class="mt-5">
+            <OfferAction action={offer.action} productName={product.name} offerLabel={multiple ? offer.label : undefined} size="md" notifyHref={offer.action.kind === 'unavailable' && offer.action.reason === 'not-released' ? notifyHref : undefined} />
+          </div>
+          {offer.note && <p class="mt-3 text-xs text-ink-3">{offer.note}</p>}
+        </li>
+      ))}
+    </ul>
+  )
+}

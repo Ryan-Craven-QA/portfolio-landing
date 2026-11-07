@@ -1,0 +1,179 @@
+---
+/**
+ * Homepage task finder: "What needs doing?" → the solution that fits.
+ * Tasks come from public solutions (src/content/solutions.yaml).
+ * Works as a plain list of links without JavaScript; with JavaScript it
+ * filters as you type and previews the matching solution.
+ */
+import type { Solution } from '../../lib/catalog.ts';
+import { normalize } from '../../lib/search.ts';
+import LineGlyph from '../brand/LineGlyph.astro';
+import CornerMarks from '../ui/CornerMarks.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  solutions: Solution[];
+}
+
+const { solutions } = Astro.props;
+
+// Interleave tasks across solutions so the first rows show variety.
+const buckets = solutions.map((solution) =>
+  solution.tasks.map((task) => ({
+    task,
+    solution,
+    hue: solution.lines[0]?.hue ?? 50,
+    search: [task, solution.title, ...solution.keywords].join(' '),
+  })),
+);
+const depth = Math.max(0, ...buckets.map((bucket) => bucket.length));
+const tasks = Array.from({ length: depth }, (_, row) => buckets.map((bucket) => bucket[row])).flat().filter((t) => t !== undefined);
+
+// Demo queries: a keyword from each solution that actually appears in one of its tasks.
+const demo = solutions
+  .map((solution) => solution.keywords.find((keyword) => solution.tasks.some((task) => normalize(task).includes(normalize(keyword)))))
+  .filter((keyword): keyword is string => Boolean(keyword))
+  .slice(0, 5);
+---
+
+{
+  tasks.length > 0 && (
+    <div class="task-finder relative" data-task-finder data-demo={JSON.stringify(demo)}>
+      <CornerMarks class="-inset-3 hidden sm:block" />
+      <div class="card overflow-hidden shadow-[var(--shadow-2)]">
+        <div class="flex h-11 items-center justify-between gap-4 border-b border-line bg-surface-2/50 px-4">
+          <span class="eyebrow flex items-center gap-2">
+            <span class="size-1.5 rounded-full bg-accent" aria-hidden="true" />
+            Task finder
+          </span>
+          <span class="eyebrow hidden sm:inline-flex" aria-hidden="true">
+            {tasks.length} tasks · {solutions.length} {solutions.length === 1 ? 'solution' : 'solutions'}
+          </span>
+        </div>
+
+        <div class="grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <div class="min-w-0 md:border-r md:border-line">
+            <form role="search" class="relative flex h-14 items-center gap-3 border-b border-line px-4" data-task-form>
+              <Icon name="search" size={18} class="text-ink-3" />
+              <label for="task-query" class="sr-only">
+                What needs doing? Filter tasks
+              </label>
+              <div class="relative min-w-0 flex-1" data-requires-js>
+                <input
+                  id="task-query"
+                  type="search"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="What needs doing?"
+                  class="h-10 w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-3 [&::-webkit-search-cancel-button]:hidden"
+                  data-task-input
+                />
+                <span class="ghost pointer-events-none absolute inset-y-0 left-0 hidden items-center text-base text-ink" aria-hidden="true" data-ghost>
+                  <span data-ghost-text />
+                  <span class="ghost-caret" />
+                </span>
+              </div>
+              <span class="text-ink-3 [html:not(.js)_&]:flex-1 [html.js_&]:hidden">What needs doing?</span>
+              <kbd class="kbd hidden sm:inline-grid" aria-hidden="true">
+                <Icon name="corner-down-left" size={11} />
+              </kbd>
+            </form>
+
+            <ul class="max-h-[19.5rem] overflow-y-auto overscroll-contain p-2" data-task-list>
+              {tasks.map((item) => (
+                <li data-task data-solution={item.solution.id} data-search={item.search}>
+                  <a
+                    href={item.solution.url}
+                    class="task-row group/row flex items-center gap-3 rounded-lg px-3 py-2.5 text-[0.9375rem] text-ink-2 transition-colors"
+                    style={`--tone-h: ${item.hue}`}
+                  >
+                    <span class="size-2 shrink-0 rounded-full bg-tone" aria-hidden="true" />
+                    <span class="min-w-0 flex-1 sm:truncate">{item.task}</span>
+                    <span class="hidden shrink-0 text-xs text-ink-3 lg:block">{item.solution.title}</span>
+                    <Icon name="arrow-right" size={14} class="shrink-0 text-ink-3 opacity-0 transition-opacity group-hover/row:opacity-100" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div class="hidden px-5 py-8 text-sm text-ink-3" data-task-empty>
+              No matching tasks.{' '}
+              <button type="button" class="link" data-search-open>
+                Search everything
+              </button>
+            </div>
+            <p class="sr-only" aria-live="polite" data-task-status />
+          </div>
+
+          <div class="relative hidden min-w-0 p-6 md:block" data-task-preview aria-hidden="true">
+            {solutions.map((solution, index) => (
+              <div data-preview={solution.id} hidden={index !== 0} class="flex h-full flex-col">
+                <p class="eyebrow">Solution</p>
+                <p class="mt-3 text-xl font-[620] tracking-[-0.02em] text-ink">{solution.title}</p>
+                <p class="mt-2 text-sm text-ink-2">{solution.summary}</p>
+                <ul class="mt-5 space-y-2">
+                  {solution.lines.map((line) => (
+                    <li class="flex items-center gap-2.5 text-sm text-ink-2">
+                      <LineGlyph glyph={line.glyph} hue={line.hue} size="sm" />
+                      <span class="min-w-0 flex-1 truncate">{line.name}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p class="mono mt-5 text-xs text-ink-3">
+                  {solution.products.length > 0
+                    ? `${solution.products.length} product${solution.products.length === 1 ? '' : 's'} available`
+                    : 'Products in development'}
+                </p>
+                <a href={solution.url} class="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-medium text-ink hover:text-accent" tabindex="-1">
+                  View solution <Icon name="arrow-right" size={14} />
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .task-row:hover,
+  .task-row:focus-visible,
+  [data-task][data-active] .task-row {
+    background-color: var(--surface-2);
+    color: var(--ink);
+  }
+  [data-task-finder][data-demo-active] [data-task]:not([data-match]) .task-row {
+    opacity: 0.38;
+  }
+  [data-task-finder][data-demo-active] [data-task][data-match] .task-row {
+    background-color: var(--tone-faint);
+    color: var(--ink);
+  }
+  [data-task-finder][data-demo-active] [data-task-input]::placeholder {
+    color: transparent;
+  }
+  .task-row {
+    transition:
+      opacity 300ms ease,
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  .ghost-caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 1.15em;
+    margin-left: 1px;
+    background: var(--accent);
+    animation: blink 1s steps(2, start) infinite;
+  }
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+</style>
+
+<script>
+  import { initTaskFinder } from '../../scripts/task-finder.ts';
+  document.querySelectorAll<HTMLElement>('[data-task-finder]').forEach(initTaskFinder);
+</script>

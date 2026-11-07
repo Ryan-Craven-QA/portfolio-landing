@@ -1,0 +1,92 @@
+---
+/**
+ * The call-to-action for one offer, rendered from the resolved CheckoutAction.
+ * Only `purchase` and `download` actions produce a working button; every other
+ * state is shown as plain status text so nothing implies checkout works when
+ * it doesn't.
+ */
+import type { CheckoutAction } from '../../lib/commerce.ts';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  action: CheckoutAction;
+  productName: string;
+  offerLabel?: string | undefined;
+  size?: 'sm' | 'md' | 'lg';
+  block?: boolean;
+  /** Where "Get notified" should point, if anywhere. */
+  notifyHref?: string | undefined;
+}
+
+const { action, productName, offerLabel, size = 'lg', block = true, notifyHref } = Astro.props;
+const label = offerLabel ? `${productName} — ${offerLabel}` : productName;
+---
+
+{
+  action.kind === 'purchase' && (
+    <div class="flex flex-col gap-2">
+      <Button
+        href={action.href}
+        size={size}
+        external
+        class={block ? 'w-full' : undefined}
+        data-checkout={action.provider.id}
+        aria-label={`${action.label}: ${label} (secure checkout on ${action.provider.label})`}
+      >
+        {action.label}
+      </Button>
+      <p class="flex items-center gap-1.5 text-xs text-ink-3">
+        <Icon name="lock" size={12} />
+        Secure checkout on {action.provider.label}
+      </p>
+    </div>
+  )
+}
+
+{
+  action.kind === 'download' && (
+    <div class="flex flex-col gap-2">
+      {action.external ? (
+        <Button href={action.href} size={size} external class={block ? 'w-full' : undefined} data-download aria-label={`${action.label}: ${label}`}>
+          {action.label}
+        </Button>
+      ) : (
+        <Button href={action.href} size={size} icon="download" class={block ? 'w-full' : undefined} data-download download aria-label={`${action.label}: ${label}`}>
+          {action.label}
+        </Button>
+      )}
+      <p class="text-xs text-ink-3">{action.external && action.provider ? `Delivered through ${action.provider.label}` : 'Free — no account needed'}</p>
+    </div>
+  )
+}
+
+{
+  action.kind === 'contact' && (
+    <Button href={action.href} size={size} variant="secondary" class={block ? 'w-full' : undefined} icon="mail">
+      {action.label}
+    </Button>
+  )
+}
+
+{
+  action.kind === 'unavailable' && (
+    <div class="flex flex-col gap-2" data-unavailable={action.reason}>
+      <p
+        class:list={[
+          'flex items-center justify-center gap-2 rounded-[var(--radius-control)] border border-dashed border-line-strong px-4 text-sm font-medium text-ink-2',
+          size === 'sm' ? 'min-h-9' : 'min-h-12',
+          !block && 'inline-flex',
+        ]}
+      >
+        <Icon name={action.reason === 'not-released' ? 'clock' : 'info'} size={15} class="text-ink-3" />
+        {action.label}
+      </p>
+      {notifyHref && (
+        <a href={notifyHref} class="link self-center text-xs">
+          Get notified when it’s ready
+        </a>
+      )}
+    </div>
+  )
+}

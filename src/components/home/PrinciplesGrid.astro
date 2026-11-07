@@ -1,0 +1,23 @@
+---
+import { principles } from '../../config/copy.ts';
+import Icon from '../ui/Icon.astro';
+---
+
+<ul class="reveal grid overflow-hidden rounded-[var(--radius-card)] border border-line bg-line gap-px sm:grid-cols-2 lg:grid-cols-3">
+  {
+    principles.map((principle, index) => (
+      <li class="group relative bg-canvas p-7 transition-colors duration-300 hover:bg-surface sm:p-8">
+        <div class="flex items-center justify-between">
+          <span class="inline-grid size-10 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2 transition-colors group-hover:text-accent" aria-hidden="true">
+            <Icon name={principle.icon} size={19} />
+          </span>
+          <span class="mono tabular text-xs text-ink-3" aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+        </div>
+        <h3 class="mt-6 text-lg font-[620] tracking-[-0.015em] text-ink">{principle.title}</h3>
+        <p class="mt-2 text-[0.9375rem] text-ink-2">{principle.body}</p>
+      </li>
+    ))
+  }
+</ul>

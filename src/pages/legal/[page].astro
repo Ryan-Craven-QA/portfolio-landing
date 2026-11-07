@@ -1,0 +1,34 @@
+---
+/**
+ * Legal pages from src/content/legal/. Only pages with `status: published`
+ * are generated (and linked in the footer). The site never invents policies.
+ */
+import { render } from 'astro:content';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../../lib/catalog.ts';
+import { formatDate } from '../../lib/format.ts';
+
+export async function getStaticPaths() {
+  const { legal } = await getCatalog();
+  return legal.map((page) => ({ params: { page: page.id }, props: { pageId: page.id } }));
+}
+
+const { pageId } = Astro.props;
+const { legal } = await getCatalog();
+const page = legal.find((p) => p.id === pageId)!;
+const { Content } = await render(page.entry);
+---
+
+<BaseLayout title={page.title} description={page.description} noindex={page.isPreview}>
+  <PageHeader eyebrow="Legal" title={page.title} breadcrumbs={[{ label: 'Home', href: '/' }, { label: page.title }]}>
+    <p class="mono text-xs tracking-wide text-ink-3 uppercase">
+      Last updated <time datetime={page.lastUpdated.toISOString()}>{formatDate(page.lastUpdated, site.locale)}</time>
+    </p>
+  </PageHeader>
+  <section class="container-site py-12 md:py-16">
+    <div class="prose">
+      <Content />
+    </div>
+  </section>
+</BaseLayout>

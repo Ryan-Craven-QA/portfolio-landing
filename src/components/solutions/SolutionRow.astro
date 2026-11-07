@@ -1,0 +1,57 @@
+---
+import type { Solution } from '../../lib/catalog.ts';
+import { pluralize } from '../../lib/format.ts';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  solution: Solution;
+  index: number;
+  headingLevel?: 'h2' | 'h3';
+  class?: string;
+  style?: string;
+}
+
+const { solution, index, headingLevel: Heading = 'h3', class: className, style } = Astro.props;
+const hue = solution.lines[0]?.hue ?? 50;
+---
+
+<article
+  class:list={['group relative grid gap-4 py-7 md:grid-cols-[3.5rem_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center md:gap-8', className]}
+  style={`--tone-h: ${hue};${style ?? ''}`}
+>
+  <div class="flex items-center gap-4 md:block">
+    <span class="mono tabular text-sm text-ink-3">{String(index + 1).padStart(2, '0')}</span>
+    <span
+      class="inline-grid size-10 place-items-center rounded-xl border border-[var(--tone-line)] bg-[var(--tone-soft)] text-tone md:mt-2"
+      aria-hidden="true"
+    >
+      <Icon name={solution.icon} size={19} />
+    </span>
+  </div>
+  <div>
+    <Heading class="text-xl font-[620] tracking-[-0.02em] text-ink sm:text-2xl">
+      <a href={solution.url} class="card-link after:-inset-x-4 after:rounded-xl">{solution.title}</a>
+    </Heading>
+    <p class="mt-2 text-ink-2">{solution.summary}</p>
+  </div>
+  <div class="flex flex-wrap items-center gap-1.5">
+    {
+      solution.lines.map((line) => (
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs text-ink-2" style={`--tone-h: ${line.hue}`}>
+          <span class="size-1.5 rounded-full bg-tone" aria-hidden="true" />
+          {line.name}
+        </span>
+      ))
+    }
+    <span class="mono ml-1 text-xs text-ink-3">
+      {solution.products.length > 0 ? pluralize(solution.products.length, 'product') : 'In development'}
+    </span>
+  </div>
+  <span
+    class="hidden size-10 place-items-center rounded-full border border-line text-ink-2 transition-all duration-300 group-hover:border-[var(--tone-line)] group-hover:bg-[var(--tone-soft)] group-hover:text-tone md:grid"
+    aria-hidden="true"
+  >
+    <Icon name="arrow-right" size={16} class="transition-transform duration-300 group-hover:translate-x-0.5" />
+  </span>
+  <span class="pointer-events-none absolute inset-x-[-1rem] inset-y-0 -z-10 rounded-xl bg-surface-2/0 transition-colors duration-300 group-hover:bg-surface-2/60" aria-hidden="true"></span>
+</article>

@@ -1,0 +1,176 @@
+---
+import { home } from '../config/copy.ts';
+import Hero from '../components/home/Hero.astro';
+import LinesGrid from '../components/home/LinesGrid.astro';
+import PrinciplesGrid from '../components/home/PrinciplesGrid.astro';
+import UpdatesSection from '../components/home/UpdatesSection.astro';
+import ProductCard from '../components/products/ProductCard.astro';
+import StatusBoard from '../components/products/StatusBoard.astro';
+import ResourceCard from '../components/resources/ResourceCard.astro';
+import SolutionRow from '../components/solutions/SolutionRow.astro';
+import Button from '../components/ui/Button.astro';
+import EmptyState from '../components/ui/EmptyState.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCatalog, site } from '../lib/catalog.ts';
+import { routes } from '../lib/routes.ts';
+import { organizationLd, websiteLd } from '../lib/seo.ts';
+
+const { lines, products, solutions, resources } = await getCatalog();
+const featured = products.filter((product) => product.featured).slice(0, 3);
+const showcase = featured.length > 0 ? featured : products.slice(0, 3);
+const latestResources = [...resources.filter((r) => r.featured), ...resources.filter((r) => !r.featured)].slice(0, 3);
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+
+// Number sections in the order they actually render.
+let n = 0;
+const next = () => String(++n).padStart(2, '0');
+const idx = {
+  lines: lines.length > 0 ? next() : '',
+  releases: next(),
+  solutions: solutions.length > 0 ? next() : '',
+  resources: latestResources.length > 0 ? next() : '',
+  principles: next(),
+  updates: next(),
+};
+---
+
+<BaseLayout title={`${site.name} — ${site.tagline}`} rawTitle jsonLd={[organizationLd(site, siteUrl), websiteLd(site, siteUrl)]}>
+  <Hero solutions={solutions} />
+
+  {
+    lines.length > 0 && (
+      <section class="section border-t border-line" aria-labelledby="lines-title">
+        <div class="container-site">
+          <SectionHeading
+            id="lines-title"
+            index={idx.lines}
+            eyebrow={home.lines.eyebrow}
+            title={home.lines.title}
+            description={home.lines.description}
+            class="mb-12 md:mb-16"
+          >
+            <Button slot="actions" href={routes.products} variant="secondary" arrow="right">
+              All products
+            </Button>
+          </SectionHeading>
+          <LinesGrid lines={lines} products={products} />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section border-t border-line" aria-labelledby="releases-title">
+    <div class="container-site">
+      {
+        showcase.length > 0 ? (
+          <>
+            <SectionHeading id="releases-title" index={idx.releases} eyebrow={home.releases.eyebrow} title={home.releases.title} class="mb-12">
+              <Button slot="actions" href={routes.products} variant="secondary" arrow="right">
+                Browse the catalog
+              </Button>
+            </SectionHeading>
+            <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {showcase.map((product, i) => (
+                <ProductCard product={product} class="reveal" style={`--i: ${i}`} />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div class="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-14">
+            <div class="reveal">
+              <p class="eyebrow mb-6">
+                <span class="tabular text-ink-2">{idx.releases}</span>
+                {home.releases.eyebrow}
+              </p>
+              <EmptyState icon="tool" title={home.releases.emptyTitle} headingId="releases-title" class="[&_h2]:text-display-2">
+                {home.releases.emptyBody.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+                <Fragment slot="actions">
+                  <Button href="#updates" arrow="right">
+                    Get release updates
+                  </Button>
+                  {resources.length > 0 && (
+                    <Button href={routes.resources} variant="secondary">
+                      Free resources
+                    </Button>
+                  )}
+                </Fragment>
+              </EmptyState>
+            </div>
+            {lines.length > 0 && <StatusBoard lines={lines} products={products} class="reveal lg:mt-12" />}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    solutions.length > 0 && (
+      <section class="section border-t border-line" aria-labelledby="solutions-title">
+        <div class="container-site">
+          <SectionHeading
+            id="solutions-title"
+            index={idx.solutions}
+            eyebrow={home.solutions.eyebrow}
+            title={home.solutions.title}
+            description={home.solutions.description}
+            class="mb-8"
+          >
+            <Button slot="actions" href={routes.solutions} variant="secondary" arrow="right">
+              All solutions
+            </Button>
+          </SectionHeading>
+          <div class="divide-y divide-line border-y border-line">
+            {solutions.map((solution, i) => (
+              <SolutionRow solution={solution} index={i} class="reveal" style={`--i: ${i}`} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    latestResources.length > 0 && (
+      <section class="section border-t border-line" aria-labelledby="resources-title">
+        <div class="container-site">
+          <SectionHeading
+            id="resources-title"
+            index={idx.resources}
+            eyebrow={home.resources.eyebrow}
+            title={home.resources.title}
+            description={home.resources.description}
+            class="mb-12"
+          >
+            <Button slot="actions" href={routes.resources} variant="secondary" arrow="right">
+              Resource library
+            </Button>
+          </SectionHeading>
+          <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {latestResources.map((resource, i) => (
+              <ResourceCard resource={resource} class="reveal" style={`--i: ${i}`} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section border-t border-line" aria-labelledby="principles-title">
+    <div class="container-site">
+      <SectionHeading
+        id="principles-title"
+        index={idx.principles}
+        eyebrow={home.principles.eyebrow}
+        title={home.principles.title}
+        description={home.principles.description}
+        class="mb-12"
+      />
+      <PrinciplesGrid />
+    </div>
+  </section>
+
+  <UpdatesSection index={idx.updates} flush />
+</BaseLayout>

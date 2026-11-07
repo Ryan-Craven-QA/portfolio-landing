@@ -1,0 +1,15 @@
+- id: fixture-published-faq
+  question: Fixture published question?
+  answer: Fixture published answer.
+  category: purchasing
+  status: published
+  order: 10
+- id: fixture-draft-faq
+  question: Fixture draft question must not appear?
+  answer: Draft answer.
+  status: draft
+- id: fixture-hidden-line-faq
+  question: Fixture hidden line question must not appear?
+  answer: Hidden line answer.
+  status: published
+  business: fixture-hidden-line

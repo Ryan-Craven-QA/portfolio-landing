@@ -1,0 +1,52 @@
+---
+import type { Resource } from '../../lib/catalog.ts';
+import { formatDate } from '../../lib/format.ts';
+import Badge from '../ui/Badge.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  resource: Resource;
+  headingLevel?: 'h2' | 'h3';
+  filterable?: boolean;
+  class?: string;
+  style?: string;
+}
+
+const { resource, headingLevel: Heading = 'h3', filterable = false, class: className, style } = Astro.props;
+const hue = resource.line?.hue;
+const filterData = filterable
+  ? {
+      'data-filter-item': '',
+      'data-type': resource.type,
+      'data-line': resource.line?.id ?? 'general',
+      'data-sort-date': String(resource.publishDate.getTime()),
+      'data-sort-name': resource.title.toLowerCase(),
+      'data-search': [resource.title, resource.description, resource.typeLabel, resource.line?.name ?? '', ...resource.tags].join(' '),
+    }
+  : {};
+---
+
+<article
+  class:list={['card card-interactive spotlight group flex flex-col p-6', className]}
+  style={`${hue !== undefined ? `--tone-h: ${hue};` : ''}${style ?? ''}`}
+  {...filterData}
+>
+  <div class="flex items-center justify-between gap-3">
+    <span class="flex flex-wrap gap-1.5">
+      {resource.isPreview && <Badge tone="draft">Draft</Badge>}
+      <Badge tone={hue !== undefined ? 'tone' : 'neutral'} dot={false}>{resource.typeLabel}</Badge>
+    </span>
+    <span class="mono text-xs text-ink-3">{resource.data.download ? resource.data.download.format : `${resource.readingMinutes} min read`}</span>
+  </div>
+  <Heading class="mt-5 text-lg leading-snug font-[620] tracking-[-0.015em] text-ink">
+    <a href={resource.url} class="card-link">{resource.title}</a>
+  </Heading>
+  <p class="mt-2.5 line-clamp-3 text-[0.9375rem] text-ink-2">{resource.description}</p>
+  <div class="mt-auto flex items-center justify-between gap-3 pt-6 text-sm text-ink-3">
+    <span class="flex min-w-0 items-center gap-2">
+      {resource.data.download && <Icon name="download" size={14} />}
+      <span class="truncate">{resource.line?.name ?? formatDate(resource.publishDate)}</span>
+    </span>
+    <Icon name="arrow-right" size={15} class="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-ink" />
+  </div>
+</article>

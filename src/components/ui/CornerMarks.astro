@@ -1,0 +1,11 @@
+---
+/** Drafting-style registration marks at the four corners of the parent (which must be `relative`). */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<span class:list={['corner-marks pointer-events-none absolute inset-0', className]} aria-hidden="true">
+  <span></span><span></span><span></span><span></span>
+</span>

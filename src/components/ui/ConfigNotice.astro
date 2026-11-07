@@ -1,0 +1,38 @@
+---
+/**
+ * Developer-only configuration hint. Renders ONLY on the dev server
+ * (`astro dev`), never in a build — visitors never see it.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  class?: string;
+}
+
+const { title, class: className } = Astro.props;
+const show = import.meta.env.DEV;
+---
+
+{
+  show && (
+    <aside
+      class:list={[
+        'flex gap-3 rounded-[var(--radius-control)] border border-dashed border-[color-mix(in_oklch,var(--caution)_50%,transparent)] bg-[color-mix(in_oklch,var(--caution)_8%,transparent)] p-4 text-sm text-ink-2',
+        className,
+      ]}
+      data-config-notice
+    >
+      <Icon name="tool" size={18} class="mt-0.5 text-caution" />
+      <div>
+        <p class="font-semibold text-ink">
+          <span class="mono mr-2 text-[0.6875rem] uppercase tracking-wider text-caution">Dev only</span>
+          {title}
+        </p>
+        <div class="mt-1 [&_code]:mono [&_code]:text-[0.8125rem] [&_code]:text-ink">
+          <slot />
+        </div>
+      </div>
+    </aside>
+  )
+}

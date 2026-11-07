@@ -1,0 +1,31 @@
+---
+/**
+ * Status badge. Tones map to meaning, not decoration:
+ * live = available, beta = early access, soon = coming soon,
+ * building = in development, neutral = everything else, draft = preview only.
+ */
+export type BadgeTone = 'live' | 'beta' | 'soon' | 'building' | 'neutral' | 'draft' | 'tone';
+
+interface Props {
+  tone?: BadgeTone;
+  dot?: boolean;
+  class?: string;
+}
+
+const { tone = 'neutral', dot = true, class: className } = Astro.props;
+
+const toneClass: Record<BadgeTone, string> = {
+  live: 'text-ok border-[color-mix(in_oklch,var(--ok)_35%,transparent)]',
+  beta: 'text-accent border-[color-mix(in_oklch,var(--accent)_35%,transparent)]',
+  soon: 'text-caution border-[color-mix(in_oklch,var(--caution)_35%,transparent)]',
+  building: 'text-ink-2',
+  neutral: 'text-ink-2',
+  draft: 'text-danger border-[color-mix(in_oklch,var(--danger)_45%,transparent)] bg-[color-mix(in_oklch,var(--danger)_10%,transparent)]',
+  tone: 'text-tone border-[var(--tone-line)] bg-[var(--tone-faint)]',
+};
+---
+
+<span class:list={['badge', toneClass[tone], className]}>
+  {dot && <span class:list={['badge-dot', tone === 'building' && 'animate-pulse']} aria-hidden="true" />}
+  <slot />
+</span>

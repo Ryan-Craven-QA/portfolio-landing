@@ -1,0 +1,63 @@
+---
+/**
+ * Product visual. Uses the product's cover image when one is configured;
+ * otherwise renders a typographic cover in the product line's colours.
+ * The generated cover never imitates a screenshot.
+ */
+import { Image } from 'astro:assets';
+import type { Product } from '../../lib/catalog.ts';
+import LineGlyph from '../brand/LineGlyph.astro';
+import CornerMarks from '../ui/CornerMarks.astro';
+
+interface Props {
+  product: Product;
+  size?: 'card' | 'hero';
+  /** Pass true for the LCP image on a product page. */
+  priority?: boolean;
+  class?: string;
+}
+
+const { product, size = 'card', priority = false, class: className } = Astro.props;
+const cover = product.data.cover;
+const widths = size === 'hero' ? [480, 720, 960, 1280] : [360, 540, 720];
+const sizes = size === 'hero' ? '(min-width: 1024px) 640px, 100vw' : '(min-width: 1024px) 380px, (min-width: 768px) 50vw, 100vw';
+---
+
+<div
+  class:list={['relative overflow-hidden bg-[var(--tone-faint)]', size === 'hero' ? 'aspect-[4/3] rounded-[var(--radius-card)] border border-line' : 'aspect-[16/10]', className]}
+  style={`--tone-h: ${product.line.hue}`}
+>
+  {
+    cover ? (
+      <Image
+        src={cover.src}
+        alt={cover.alt}
+        widths={widths}
+        sizes={sizes}
+        class="size-full object-cover"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+      />
+    ) : (
+      <div class="absolute inset-0" aria-hidden="true">
+        <div class="dot-grid absolute inset-0 opacity-70" />
+        <div class="absolute inset-0 bg-[radial-gradient(70%_90%_at_85%_0%,var(--tone-soft),transparent_70%)]" />
+        <div class:list={['absolute flex flex-col justify-between', size === 'hero' ? 'inset-8 sm:inset-12' : 'inset-5']}>
+          <div class="flex items-center justify-between">
+            <LineGlyph glyph={product.line.glyph} hue={product.line.hue} size={size === 'hero' ? 'lg' : 'md'} />
+            <span class="eyebrow text-tone">{product.typeLabel}</span>
+          </div>
+          <p
+            class:list={[
+              'max-w-[14ch] font-[650] tracking-[-0.035em] text-ink',
+              size === 'hero' ? 'text-[clamp(2rem,4vw,3.25rem)] leading-[1]' : 'text-2xl leading-[1.05]',
+            ]}
+          >
+            {product.name}
+          </p>
+        </div>
+        {size === 'hero' && <CornerMarks class="inset-4" />}
+      </div>
+    )
+  }
+</div>

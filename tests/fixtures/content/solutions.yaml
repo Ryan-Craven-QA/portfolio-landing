@@ -1,0 +1,20 @@
+- id: fixture-solution
+  title: Fixture solution title
+  summary: Fixture solution summary for automated tests.
+  problem: Fixture problem statement used by automated tests.
+  approach: [Fixture approach step one, Fixture approach step two]
+  tasks: [Fixture task about invoices, Fixture task about templates]
+  businesses: [fixture-software, fixture-templates]
+  icon: bolt
+  order: 10
+  keywords: [invoices, templates]
+
+- id: fixture-hidden-solution
+  title: Fixture hidden solution
+  summary: Only uses the hidden line, so it must not be published.
+  problem: Hidden fixture problem.
+  approach: [Hidden approach]
+  tasks: [Hidden fixture task]
+  businesses: [fixture-hidden-line]
+  icon: shield
+  order: 20

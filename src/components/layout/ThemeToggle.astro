@@ -1,0 +1,13 @@
+---
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<button type="button" class:list={['icon-btn', className]} data-theme-toggle data-requires-js aria-label="Switch to light theme">
+  <Icon name="sun" size={18} class="hidden dark:block" />
+  <Icon name="moon" size={18} class="hidden light:block" />
+</button>

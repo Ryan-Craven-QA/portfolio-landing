@@ -1,0 +1,23 @@
+---
+/** Development-status badge for a product line. Hidden for "available" lines unless `always`. */
+import type { Line } from '../../lib/catalog.ts';
+import Badge, { type BadgeTone } from './Badge.astro';
+
+interface Props {
+  line: Pick<Line, 'status' | 'statusLabel' | 'isPreview'>;
+  always?: boolean;
+  class?: string;
+}
+
+const { line, always = false, class: className } = Astro.props;
+const tone: Record<Line['status'], BadgeTone> = {
+  exploring: 'neutral',
+  'in-development': 'building',
+  'coming-soon': 'soon',
+  'early-access': 'beta',
+  available: 'live',
+};
+---
+
+{line.isPreview && <Badge tone="draft" class={className}>Hidden</Badge>}
+{(always || line.status !== 'available') && <Badge tone={tone[line.status]} class={className}>{line.statusLabel}</Badge>}

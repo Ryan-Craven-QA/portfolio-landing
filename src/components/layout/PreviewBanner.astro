@@ -1,0 +1,14 @@
+---
+/** Shown only in `npm run dev:drafts`. Production builds never include drafts. */
+import Icon from '../ui/Icon.astro';
+---
+
+<div class="sticky top-0 z-50 border-b border-[color-mix(in_oklch,var(--danger)_40%,transparent)] bg-[color-mix(in_oklch,var(--danger)_14%,var(--canvas))] text-sm text-ink">
+  <div class="container-site flex items-center gap-3 py-2">
+    <Icon name="eye" size={16} class="text-danger" />
+    <p>
+      <strong class="font-semibold">Draft preview.</strong>
+      Hidden product lines and unpublished content are visible on this dev server only — production builds never include them.
+    </p>
+  </div>
+</div>

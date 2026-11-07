@@ -1,0 +1,46 @@
+---
+/**
+ * Product-line glyph inside a tinted tile. Colour comes from the nearest
+ * --tone-h scope (set on the tile itself via `hue`).
+ */
+import type { Line } from '../../lib/catalog.ts';
+
+interface Props {
+  glyph: Line['glyph'];
+  hue: number;
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { glyph, hue, size = 'md', class: className } = Astro.props;
+
+const GLYPHS: Record<Line['glyph'], string> = {
+  flow: '<rect x="3" y="3.5" width="8" height="6" rx="1.5"/><rect x="13" y="14.5" width="8" height="6" rx="1.5"/><path d="M7 9.5v3a2 2 0 0 0 2 2h4"/><circle cx="17.5" cy="6.5" r="2"/><path d="M11 6.5h4.5"/>',
+  plug: '<path d="M9 3v4M15 3v4"/><path d="M6.5 7h11v3.5a5.5 5.5 0 0 1-11 0z"/><path d="M12 16v5"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m8.8 15 2.1 2.1 4.3-4.3"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><path d="M16.5 13.5v6M13.5 16.5h6"/>',
+  shield: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.3-4.3"/>',
+};
+
+const dims = { sm: { box: 'size-8 rounded-[0.55rem]', icon: 16 }, md: { box: 'size-10 rounded-[0.7rem]', icon: 20 }, lg: { box: 'size-14 rounded-2xl', icon: 26 } }[size];
+---
+
+<span
+  class:list={['inline-grid shrink-0 place-items-center border border-[var(--tone-line)] bg-[var(--tone-soft)] text-tone', dims.box, className]}
+  style={`--tone-h: ${hue}`}
+  aria-hidden="true"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={dims.icon}
+    height={dims.icon}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+    set:html={GLYPHS[glyph]}
+  />
+</span>

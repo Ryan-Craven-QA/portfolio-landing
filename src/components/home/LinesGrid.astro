@@ -1,0 +1,39 @@
+---
+/**
+ * Responsive bento grid for product lines. The layout adapts to the number of
+ * visible lines so launching with one, three or five always looks deliberate:
+ *   1 → one wide card · 2 → halves · 3 → thirds · 4 → 2×2 · 5 → 2 + 3
+ */
+import type { Line, Product } from '../../lib/catalog.ts';
+import LineCard from './LineCard.astro';
+
+interface Props {
+  lines: Line[];
+  products: Product[];
+}
+
+const { lines, products } = Astro.props;
+const count = lines.length;
+
+function span(index: number): string {
+  if (count === 1) return 'lg:col-span-6';
+  if (count === 2 || count === 4) return 'lg:col-span-3';
+  if (count === 3) return 'lg:col-span-2';
+  if (count === 5) return index < 2 ? 'lg:col-span-3' : 'lg:col-span-2';
+  return 'lg:col-span-2';
+}
+---
+
+<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-6 lg:gap-5">
+  {
+    lines.map((line, index) => (
+      <LineCard
+        line={line}
+        productCount={products.filter((product) => product.line.id === line.id).length}
+        wide={count === 1}
+        class:list={['reveal', span(index), count === 1 && 'md:col-span-2', count === 5 && index === 4 && 'md:col-span-2 lg:col-span-2', count === 3 && index === 2 && 'md:col-span-2 lg:col-span-2']}
+        style={`--i: ${index}`}
+      />
+    ))
+  }
+</div>

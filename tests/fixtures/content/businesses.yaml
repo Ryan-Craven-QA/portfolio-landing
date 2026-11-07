@@ -1,0 +1,37 @@
+# Fixture product lines. "fixture-hidden-line" is hidden: neither it nor any
+# of its products may appear anywhere in the fixture build.
+- id: fixture-software
+  name: Fixture Software
+  tagline: Fixture tagline for the software line.
+  description: Fixture description for the software line used by automated tests.
+  visible: true
+  status: available
+  order: 10
+  hue: 255
+  glyph: flow
+  art: document-fields
+  examples: [Fixture example one, Fixture example two]
+
+- id: fixture-templates
+  name: Fixture Templates
+  tagline: Fixture tagline for the templates line.
+  description: Fixture description for the templates line used by automated tests.
+  visible: true
+  status: early-access
+  order: 20
+  hue: 85
+  glyph: grid
+  art: file-stack
+  disclaimer: Fixture disclaimer text for the templates line.
+  examples: [Fixture template example]
+
+- id: fixture-hidden-line
+  name: Fixture Hidden Line
+  tagline: This line must never be published.
+  description: Hidden fixture line. If this text appears in the build, visibility rules are broken.
+  visible: false
+  status: in-development
+  hue: 350
+  glyph: shield
+  art: message-check
+  examples: [Secret example]

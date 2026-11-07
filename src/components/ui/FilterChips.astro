@@ -1,0 +1,39 @@
+---
+/** Radio-chip facet for list filters. The first option ("All") has value "". */
+export interface ChipOption {
+  value: string;
+  label: string;
+  count?: number;
+  hue?: number | undefined;
+}
+
+interface Props {
+  name: string;
+  legend: string;
+  options: ChipOption[];
+  allLabel?: string;
+  class?: string;
+}
+
+const { name, legend, options, allLabel = 'All', class: className } = Astro.props;
+---
+
+<fieldset class:list={['min-w-0', className]}>
+  <legend class="eyebrow mb-3">{legend}</legend>
+  <div class="flex flex-wrap gap-1.5">
+    <label class="chip chip-toggle">
+      <input type="radio" class="sr-only" name={name} value="" checked />
+      {allLabel}
+    </label>
+    {
+      options.map((option) => (
+        <label class="chip chip-toggle" style={option.hue !== undefined ? `--tone-h: ${option.hue}` : undefined}>
+          <input type="radio" class="sr-only" name={name} value={option.value} />
+          {option.hue !== undefined && <span class="size-1.5 rounded-full bg-tone" aria-hidden="true" />}
+          {option.label}
+          {option.count !== undefined && <span class="mono text-[0.6875rem] opacity-60">{option.count}</span>}
+        </label>
+      ))
+    }
+  </div>
+</fieldset>

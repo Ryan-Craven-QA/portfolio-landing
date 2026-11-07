@@ -1,0 +1,103 @@
+---
+/**
+ * Product-update sign-up. Renders a real form ONLY when a provider is
+ * configured in src/config/site.ts. Otherwise it offers the RSS feed, so no
+ * email address is ever collected without a destination.
+ */
+import { getLegalLinks, site } from '../../lib/catalog.ts';
+import { newsletterTarget } from '../../lib/newsletter.ts';
+import { routes } from '../../lib/routes.ts';
+import Button from '../ui/Button.astro';
+import ConfigNotice from '../ui/ConfigNotice.astro';
+
+interface Props {
+  idPrefix?: string;
+}
+
+const { idPrefix = 'newsletter' } = Astro.props;
+const target = newsletterTarget(site);
+const privacy = (await getLegalLinks()).find((link) => link.label === 'Privacy');
+const inputId = `${idPrefix}-email`;
+---
+
+{
+  target ? (
+    <form
+      action={target.action}
+      method="post"
+      target="_blank"
+      {...{ rel: 'noopener' } as Record<string, string>}
+      class="w-full"
+      data-newsletter-form
+      data-provider={target.providerName}
+    >
+      <label for={inputId} class="field-label">
+        Email address
+      </label>
+      <div class="flex flex-col gap-2.5 sm:flex-row">
+        <input
+          id={inputId}
+          name={target.emailField}
+          type="email"
+          required
+          autocomplete="email"
+          inputmode="email"
+          placeholder="you@example.com"
+          class="input sm:flex-1"
+          aria-describedby={`${idPrefix}-note`}
+        />
+        {Object.entries(target.hiddenFields).map(([name, value]) => (
+          <input type="hidden" name={name} value={value} />
+        ))}
+        <Button type="submit" size="md" class="sm:w-auto" arrow="right">
+          Get updates
+        </Button>
+      </div>
+      <p id={`${idPrefix}-note`} class="field-hint" data-newsletter-note>
+        Sign-up is handled by {target.providerName} and opens in a new tab to confirm. You can unsubscribe from any email.
+        {privacy && (
+          <>
+            {' '}
+            <a href={privacy.href} class="link">
+              Privacy policy
+            </a>
+            .
+          </>
+        )}
+      </p>
+    </form>
+  ) : (
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap gap-3">
+        <Button href={routes.rss} variant="secondary" icon="rss">
+          Subscribe via RSS
+        </Button>
+        <Button href={routes.resources} variant="ghost" arrow="right">
+          Browse resources
+        </Button>
+      </div>
+      <p class="text-sm text-ink-3">
+        Or paste <code class="mono break-all text-ink-2">{new URL(routes.rss, Astro.site ?? `${site.url}/`).href}</code> into any feed reader.
+      </p>
+      <ConfigNotice title="Email sign-up is off">
+        No newsletter provider is configured, so no form is shown and no addresses are collected. Set <code>newsletter</code> in{' '}
+        <code>src/config/site.ts</code> (Buttondown, Kit, or any HTML-form provider) to enable it.
+      </ConfigNotice>
+    </div>
+  )
+}
+
+<script>
+  // After the provider opens in a new tab, confirm on this page too.
+  document.querySelectorAll<HTMLFormElement>('[data-newsletter-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const note = form.querySelector<HTMLElement>('[data-newsletter-note]');
+      if (!note) return;
+      window.setTimeout(() => {
+        note.textContent = `Almost there — finish signing up in the ${form.dataset.provider ?? 'provider'} tab that just opened.`;
+        note.setAttribute('role', 'status');
+        form.reset();
+      }, 50);
+    });
+  });
+</script>
