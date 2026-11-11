@@ -1,0 +1,51 @@
+---
+import { landingAnchors } from '../../config/navigation.ts';
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { contactEmail, site } from '../../lib/catalog.ts';
+import { routes } from '../../lib/routes.ts';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { contact } = landing;
+const email = contactEmail('general');
+const booking = site.earlyAccess.bookingUrl;
+---
+
+<section id="contact" class="scroll-mt-16 border-t border-line" aria-labelledby="contact-title">
+  <div class="container-site flex flex-col gap-8 py-14 md:flex-row md:items-end md:justify-between md:py-20">
+    <div class="max-w-xl">
+      <p class="eyebrow">
+        <span class="tabular text-ink-2">{index}</span>
+        {contact.eyebrow}
+      </p>
+      <h2 id="contact-title" class="mt-5 text-display-3 text-ink">{contact.title}</h2>
+      <p class="mt-3 text-ink-2">{brandify(contact.description, site.name)}</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <Button href={routes.contact} arrow="right">Contact us</Button>
+      {
+        email && (
+          <Button href={`mailto:${email}`} variant="secondary" icon="mail">
+            {email}
+          </Button>
+        )
+      }
+      {
+        booking ? (
+          <Button href={booking} variant="secondary" external>
+            Book an interview
+          </Button>
+        ) : (
+          <Button href={landingAnchors.register} variant="ghost" data-intent-link="interview">
+            Request an interview
+          </Button>
+        )
+      }
+    </div>
+  </div>
+</section>

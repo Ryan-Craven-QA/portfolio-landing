@@ -6,50 +6,52 @@ import EmptyState from '../components/ui/EmptyState.astro';
 import FaqList from '../components/ui/FaqList.astro';
 import Icon from '../components/ui/Icon.astro';
 import PageHeader from '../components/ui/PageHeader.astro';
+import { contactPage } from '../config/copy.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import type { IconName } from '../lib/icons.ts';
-import { CAN_CONTACT, contactEmail, getCatalog, site } from '../lib/catalog.ts';
+import { brandify } from '../lib/brand.ts';
+import { CAN_CONTACT, contactEmail, getCatalog, getSections, site } from '../lib/catalog.ts';
 import { routes } from '../lib/routes.ts';
 import { breadcrumbLd } from '../lib/seo.ts';
 
 const { faqs } = await getCatalog();
+const sections = await getSections();
 const hasForm = site.contact.form.provider !== 'none';
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
-
-const channels: Array<{ topic: 'general' | 'support' | 'business'; icon: IconName; title: string; body: string }> = [
-  { topic: 'general', icon: 'message', title: 'General inquiries', body: 'Questions about the studio, a product line, or anything else.' },
-  { topic: 'support', icon: 'lifebuoy', title: 'Product support', body: 'Help with a product you use — setup, problems, or how to do something.' },
-  { topic: 'business', icon: 'building', title: 'Business inquiries', body: 'Organization and agency licensing, partnerships, and custom requests.' },
-];
+const copy = contactPage[site.homepage];
+const b = (text: string) => brandify(text, site.name);
+const formTopics = new Set(copy.topics.map((topic) => topic.value));
+const booking = site.earlyAccess.bookingUrl;
+const helpLabel = site.homepage === 'product' ? 'Help and FAQ' : 'Support center and FAQ';
 ---
 
 <BaseLayout
   title="Contact"
-  description={`Contact ${site.name} for general questions, product support, or business and licensing inquiries.`}
+  description={b(copy.metaDescription)}
   jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Contact', href: routes.contact }], siteUrl)]}
 >
   <PageHeader
     eyebrow="Contact"
     title="Get in touch."
-    description="A question about a product, help with something you’re using, or a business inquiry — here’s how to reach us."
+    description={b(copy.description)}
     breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
   />
 
   <section class="container-site py-12 md:py-16" aria-label="Ways to get in touch">
     <ul class="grid gap-4 md:grid-cols-3">
       {
-        channels.map((channel) => {
-          const email = contactEmail(channel.topic);
+        copy.channels.map((channel) => {
+          const email = channel.topic ? contactEmail(channel.topic) : undefined;
+          const formTopic = hasForm && channel.topic && formTopics.has(channel.topic) ? channel.topic : undefined;
           return (
             <li class="card flex flex-col p-6">
               <span class="grid size-10 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
                 <Icon name={channel.icon} size={19} />
               </span>
-              <h2 class="mt-5 text-lg font-[620] text-ink">{channel.title}</h2>
-              <p class="mt-2 text-[0.9375rem] text-ink-2">{channel.body}</p>
+              <h2 class="mt-5 text-lg font-[620] text-ink">{b(channel.title)}</h2>
+              <p class="mt-2 text-[0.9375rem] text-ink-2">{b(channel.body)}</p>
               <div class="mt-auto space-y-2 pt-6 text-sm">
-                {hasForm && (
-                  <a href={`?topic=${channel.topic}#contact-form`} data-topic-link={channel.topic} class="flex items-center gap-2 font-medium text-ink hover:text-accent">
+                {formTopic && (
+                  <a href={`?topic=${formTopic}#contact-form`} data-topic-link={formTopic} class="flex items-center gap-2 font-medium text-ink hover:text-accent">
                     <Icon name="arrow-down" size={14} /> Use the form
                   </a>
                 )}
@@ -58,7 +60,24 @@ const channels: Array<{ topic: 'general' | 'support' | 'business'; icon: IconNam
                     <Icon name="mail" size={14} /> {email}
                   </a>
                 )}
-                {!hasForm && !email && <p class="text-ink-3">Not available yet.</p>}
+                {channel.link && (
+                  <a href={channel.link.href} class="flex items-center gap-2 font-medium text-ink hover:text-accent">
+                    <Icon name="arrow-right" size={14} /> {channel.link.label}
+                  </a>
+                )}
+                {channel.link && channel.showBooking && (
+                  booking ? (
+                    <a href={booking} class="link flex items-center gap-2" rel="noopener" target="_blank">
+                      <Icon name="calendar" size={14} /> {site.earlyAccess.bookingLabel}
+                      <span class="sr-only">(opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    <a href={`${routes.home}?interest=interview#register`} class="link flex items-center gap-2">
+                      <Icon name="calendar" size={14} /> Request an interview
+                    </a>
+                  )
+                )}
+                {!formTopic && !email && !channel.link && <p class="text-ink-3">Not available yet.</p>}
               </div>
             </li>
           );
@@ -81,19 +100,26 @@ const channels: Array<{ topic: 'general' | 'support' | 'business'; icon: IconNam
         <p class="mt-4 text-ink-2">
           {
             hasForm
-              ? 'Choose a topic so your message reaches the right place. For support, mention the product you’re using.'
+              ? b(copy.formIntro)
               : CAN_CONTACT
                 ? 'Use the email address for your topic above.'
                 : 'Ways to reach us are being set up.'
           }
         </p>
         <div class="mt-8 space-y-2 text-sm">
+          {site.homepage === 'product' && (
+            <a href={`${routes.home}?interest=early-access#register`} class="flex items-center gap-2 text-ink-2 hover:text-ink">
+              <Icon name="calendar" size={15} /> Early-access form
+            </a>
+          )}
           <a href={routes.support} class="flex items-center gap-2 text-ink-2 hover:text-ink">
-            <Icon name="lifebuoy" size={15} /> Support center and FAQ
+            <Icon name="lifebuoy" size={15} /> {helpLabel}
           </a>
-          <a href={routes.resources} class="flex items-center gap-2 text-ink-2 hover:text-ink">
-            <Icon name="book" size={15} /> Guides and documentation
-          </a>
+          {sections.resources && (
+            <a href={routes.resources} class="flex items-center gap-2 text-ink-2 hover:text-ink">
+              <Icon name="book" size={15} /> Guides and documentation
+            </a>
+          )}
         </div>
       </div>
       <div class="lg:col-span-8">
@@ -106,10 +132,10 @@ const channels: Array<{ topic: 'general' | 'support' | 'business'; icon: IconNam
             </EmptyState>
           ) : (
             <EmptyState icon="mail" title="Contact channels are being set up." headingLevel="h3">
-              <p>A way to reach us will be available here shortly. In the meantime, the support center answers common questions.</p>
+              <p>A way to reach us will be available here shortly. In the meantime, the FAQ answers common questions.</p>
               <Fragment slot="actions">
                 <Button href={routes.support} variant="secondary">
-                  Visit the support center
+                  Read the FAQ
                 </Button>
               </Fragment>
             </EmptyState>

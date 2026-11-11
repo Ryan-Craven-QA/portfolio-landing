@@ -2,7 +2,7 @@
 title: Free template — a simple document inventory for your business
 description: A ready-to-use spreadsheet for tracking the documents your business depends on, with guidance on what to record and how to keep it current.
 type: download
-status: published
+status: draft
 publishDate: 2026-11-07
 tags: [documents, organization, template, small business, spreadsheet]
 download:

@@ -1,6 +1,6 @@
 ---
-import { isActive, primaryCta, primaryNav } from '../../config/navigation.ts';
-import { getCatalog } from '../../lib/catalog.ts';
+import { getNavigation, isActive } from '../../config/navigation.ts';
+import { getCatalog, getSections, site } from '../../lib/catalog.ts';
 import Logo from '../brand/Logo.astro';
 import LineGlyph from '../brand/LineGlyph.astro';
 import Button from '../ui/Button.astro';
@@ -9,6 +9,10 @@ import ThemeToggle from './ThemeToggle.astro';
 
 const pathname = Astro.url.pathname;
 const { lines } = await getCatalog();
+const navigation = getNavigation(site.homepage, await getSections());
+const primaryNav = navigation.primary;
+const primaryCta = navigation.cta;
+const showSearch = site.features.search;
 ---
 
 <header
@@ -45,21 +49,29 @@ const { lines } = await getCatalog();
     </nav>
 
     <div class="ml-auto flex items-center gap-1">
-      <button
-        type="button"
-        data-search-open
-        data-requires-js
-        aria-haspopup="dialog"
-        aria-controls="search-dialog"
-        class="group/search hidden h-9 items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface/60 pr-1.5 pl-3 text-sm text-ink-3 transition-colors hover:border-line-strong hover:text-ink-2 md:inline-flex"
-      >
-        <Icon name="search" size={15} />
-        <span class="pr-6">Search</span>
-        <kbd class="kbd" data-shortcut-hint>/</kbd>
-      </button>
-      <button type="button" data-search-open data-requires-js aria-label="Search" aria-haspopup="dialog" class="icon-btn md:hidden">
-        <Icon name="search" size={18} />
-      </button>
+      {
+        showSearch && (
+          <>
+            <button
+              type="button"
+              data-search-open
+              data-requires-js
+              aria-haspopup="dialog"
+              aria-controls="search-dialog"
+              class="group/search hidden h-9 items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface/60 pr-1.5 pl-3 text-sm text-ink-3 transition-colors hover:border-line-strong hover:text-ink-2 xl:inline-flex"
+            >
+              <Icon name="search" size={15} />
+              <span class="pr-6">Search</span>
+              <kbd class="kbd" data-shortcut-hint>
+                /
+              </kbd>
+            </button>
+            <button type="button" data-search-open data-requires-js aria-label="Search" aria-haspopup="dialog" class="icon-btn xl:hidden">
+              <Icon name="search" size={18} />
+            </button>
+          </>
+        )
+      }
       <ThemeToggle />
       <Button href={primaryCta.href} size="sm" class="ml-1.5 hidden sm:inline-flex" arrow="right">{primaryCta.label}</Button>
       <button

@@ -3,11 +3,13 @@ import { isolateNetwork } from './helpers.ts';
 
 test.beforeEach(async ({ page }) => isolateNetwork(page));
 
-test('primary navigation marks the current page', async ({ page }) => {
-  await page.goto('/solutions/');
+test('primary navigation shows the product sections and marks the current page', async ({ page }) => {
+  await page.goto('/contact/');
   const nav = page.getByRole('navigation', { name: 'Primary' });
-  await expect(nav.getByRole('link')).toHaveText(['Home', 'Products', 'Solutions', 'Resources', 'About', 'Contact']);
-  await expect(nav.getByRole('link', { name: 'Solutions' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link')).toHaveText(['How it works', 'Demo', 'Features', 'Pricing', 'FAQ', 'Contact']);
+  await expect(nav.getByRole('link', { name: 'Contact' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: 'Pricing' })).toHaveAttribute('href', '/#pricing');
+  await expect(nav.getByRole('link', { name: 'Pricing' })).not.toHaveAttribute('aria-current', 'page');
 });
 
 test('the skip link moves focus to the main content', async ({ page }) => {
@@ -58,23 +60,11 @@ test('search shows a friendly message when nothing matches', async ({ page }) =>
   await expect(dialog.locator('[data-search-empty]')).toBeVisible();
 });
 
-test('the homepage task finder filters tasks and opens the matching solution', async ({ page }) => {
-  await page.goto('/');
-  const finder = page.locator('[data-task-finder]');
-  const input = finder.getByRole('searchbox', { name: /What needs doing/ });
-  await input.fill('nothing matches this');
-  await expect(finder.locator('[data-task-empty]')).toBeVisible();
-  await expect(finder.locator('[data-task]:visible')).toHaveCount(0);
-  await input.fill('invoices');
-  await expect(finder.locator('[data-task]:visible').first()).toContainText('Fixture task about invoices');
-  await input.press('Enter');
-  await expect(page).toHaveURL(/\/solutions\/fixture-solution\/$/);
-});
-
 test('unknown URLs return the 404 page', async ({ page }) => {
   const response = await page.goto('/this/does/not/exist/');
   expect(response?.status()).toBe(404);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('This page isn’t on the workbench.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('We couldn’t find that page.');
+  await expect(page.locator('main').getByRole('link', { name: 'Interactive demo' })).toHaveAttribute('href', '/#demo');
 });
 
 test('resource pages render a table of contents and code blocks', async ({ page }) => {

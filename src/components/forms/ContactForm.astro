@@ -5,6 +5,8 @@
  * and this site never stores messages. Works without JavaScript (the provider
  * shows its own confirmation page); with JavaScript it sends in place.
  */
+import { contactPage } from '../../config/copy.ts';
+import { brandify } from '../../lib/brand.ts';
 import { contactEmail, getCatalog, getLegalLinks, site } from '../../lib/catalog.ts';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
@@ -21,11 +23,8 @@ const endpoint =
       ? 'https://api.web3forms.com/submit'
       : null;
 const providerName = config.provider === 'formspree' ? 'Formspree' : 'Web3Forms';
-const topics = [
-  { value: 'general', label: 'General inquiry' },
-  { value: 'support', label: 'Product support' },
-  { value: 'business', label: 'Business inquiry' },
-];
+const copy = contactPage[site.homepage];
+const topics = copy.topics.map((topic) => ({ value: topic.value, label: brandify(topic.label, site.name) }));
 ---
 
 {
@@ -95,7 +94,7 @@ const topics = [
           </label>
           <textarea id="contact-message" name="message" required minlength="10" maxlength="5000" rows="6" class="input" aria-describedby="contact-message-hint" />
           <p id="contact-message-hint" class="field-hint">
-            For product support, include what you were trying to do and what happened instead.
+            {brandify(copy.messageHint, site.name)}
           </p>
         </div>
 

@@ -1,0 +1,49 @@
+---
+import { getNavigation, landingAnchors } from '../../config/navigation.ts';
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { canRegister, getSections, site } from '../../lib/catalog.ts';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import TrailPreview from './TrailPreview.astro';
+
+const { hero } = site;
+const cta = getNavigation(site.homepage, await getSections()).cta;
+---
+
+<section class="relative overflow-hidden" aria-labelledby="hero-title">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="dot-grid absolute inset-0 [mask-image:radial-gradient(ellipse_75%_65%_at_60%_35%,#000_25%,transparent_75%)]"></div>
+    <div class="absolute inset-x-0 top-0 h-[38rem] bg-[radial-gradient(50%_60%_at_65%_0%,var(--accent-soft),transparent_70%)] opacity-60"></div>
+    <div class="container-site absolute inset-0 hidden lg:block">
+      <div class="h-full border-x border-dashed border-line"></div>
+    </div>
+  </div>
+
+  <div class="container-site relative grid grid-cols-1 gap-14 pt-14 pb-20 sm:pt-20 lg:grid-cols-12 lg:items-center lg:gap-10 lg:pt-24 lg:pb-28">
+    <div class="min-w-0 lg:col-span-7">
+      <p class="eyebrow enter" style="--i: 0">
+        <span class="relative flex size-2" aria-hidden="true">
+          <span class="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-50 motion-reduce:hidden"></span>
+          <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
+        </span>
+        {hero.eyebrow}{canRegister() && ` · ${landing.earlyAccessOpen}`}
+      </p>
+      <h1 id="hero-title" class="mt-7 max-w-[15ch] text-[clamp(2.6rem,1.5rem+3.9vw,4.6rem)] leading-[1] font-[640] tracking-[-0.04em] text-ink">
+        {hero.title}
+      </h1>
+      <p class="mt-7 max-w-[36rem] text-lead text-ink-2">{brandify(hero.description, site.name)}</p>
+      <div class="enter mt-10 flex flex-wrap gap-3" style="--i: 1">
+        <Button href={cta.href} size="lg" arrow="right" class="w-full sm:w-auto" data-intent-link="early-access">{cta.label}</Button>
+        <Button href={landingAnchors.demo} size="lg" variant="secondary" class="w-full sm:w-auto">Try the demo</Button>
+      </div>
+      <p class="enter mt-8 flex items-start gap-2 text-sm text-ink-3" style="--i: 2">
+        <Icon name="info" size={16} class="mt-0.5" />
+        <span>{brandify(landing.status, site.name)}</span>
+      </p>
+    </div>
+    <div class="enter min-w-0 lg:col-span-5" style="--i: 2">
+      <TrailPreview />
+    </div>
+  </div>
+</section>

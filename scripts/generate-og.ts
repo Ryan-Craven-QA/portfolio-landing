@@ -39,7 +39,7 @@ async function main() {
     .glow { position: absolute; inset: 0; background: radial-gradient(45% 55% at 85% 0%, rgba(251,132,53,.18), transparent 70%); }
     .frame { position: absolute; inset: 40px; border: 1px dashed rgba(242,240,235,.12); border-radius: 18px; }
     .content { position: absolute; inset: 88px 96px; display: flex; flex-direction: column; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 16px; font-size: 34px; font-weight: 650; letter-spacing: -0.035em; text-transform: lowercase; }
+    .brand { display: flex; align-items: center; gap: 16px; font-size: 34px; font-weight: 650; letter-spacing: -0.035em; }
     h1 { font-size: 78px; line-height: 0.98; font-weight: 640; letter-spacing: -0.042em; max-width: 900px; }
     .foot { display: flex; justify-content: space-between; align-items: center; font-family: Geist, monospace; font-size: 20px; letter-spacing: .06em; text-transform: uppercase; color: rgba(242,240,235,.6); }
     .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #fb8435; margin-right: 14px; }

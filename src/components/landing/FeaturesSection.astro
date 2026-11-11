@@ -1,0 +1,39 @@
+---
+import { landing } from '../../config/landing.ts';
+import Badge from '../ui/Badge.astro';
+import Icon from '../ui/Icon.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { features } = landing;
+---
+
+<section id="features" class="section scroll-mt-16 border-t border-line" aria-labelledby="features-title">
+  <div class="container-site">
+    <SectionHeading id="features-title" index={index} eyebrow={features.eyebrow} title={features.title} description={features.description} class="mb-12" />
+    <ul class="reveal grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+      {
+        features.items.map((feature) => (
+          <li class="group relative bg-canvas p-7 transition-colors duration-300 hover:bg-surface sm:p-8">
+            <div class="flex items-center justify-between gap-3">
+              <span class="inline-grid size-10 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2 transition-colors group-hover:text-accent" aria-hidden="true">
+                <Icon name={feature.icon} size={19} />
+              </span>
+              <Badge tone="neutral" dot={false}>Planned</Badge>
+            </div>
+            <h3 class="mt-6 text-lg font-[620] tracking-[-0.015em] text-ink">{feature.title}</h3>
+            <p class="mt-2 text-[0.9375rem] text-ink-2">{feature.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-6 flex items-start gap-2 text-sm text-ink-3">
+      <Icon name="info" size={15} class="mt-0.5" />
+      {features.note}
+    </p>
+  </div>
+</section>

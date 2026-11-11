@@ -17,11 +17,15 @@ export default defineSiteConfig({
   url: 'https://fixtures.test-studio.dev',
   locale: 'en-US',
   currency: 'USD',
+  homepage: 'product',
   hero: {
     eyebrow: 'Fixture eyebrow',
     title: 'Fixture hero title for tests.',
     description: 'Fixture hero description used by the end-to-end test suite.',
   },
+  disclaimer: 'Fixture disclaimer: administrative tracking only.',
+  features: { search: true },
+  earlyAccess: { bookingUrl: 'https://cal.com/fixture-studio/intro' },
   contact: {
     general: 'hello@fixtures.test-studio.dev',
     support: 'support@fixtures.test-studio.dev',

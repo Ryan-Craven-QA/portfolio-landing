@@ -5,10 +5,22 @@ changing code.
 
 ## What this is
 
-A static Astro 7 site: marketing pages plus a config-driven product catalog for
-an independent studio with five product lines. There is no backend. Commerce,
-forms, newsletter and analytics are delegated to external hosted providers and
-are **off until configured**.
+A static Astro 7 site for **RenewalTrail** (a working name, configurable in
+`src/config/site.ts`): a single-product landing page for a planned tool that
+helps small property-management companies track vendor document expiration
+dates, renewal requests and follow-ups. The product is being **validated**
+first (a spreadsheet Starter Kit, see STARTER_KIT_SPEC.md and
+VALIDATION_PLAN.md); nothing is for sale.
+
+Two homepage modes (`homepage` in site config):
+- `'product'` (live): the landing page in `src/components/landing/`.
+- `'portfolio'`: the original multi-product catalog homepage
+  (`src/components/home/PortfolioHome.astro`). All product lines are hidden;
+  catalog index pages (`/products/`, `/solutions/`, `/resources/`) are only
+  built while they have public content.
+
+There is no backend. Forms, analytics and (later) checkout are delegated to
+external hosted providers and are **off until configured**.
 
 ## Non-negotiable rules
 
@@ -31,7 +43,22 @@ are **off until configured**.
 6. **Keep JavaScript minimal.** Progressive enhancement only; every page must
    work without JS. No UI frameworks, no animation libraries.
 7. **The repository is public.** Anything committed (drafts, docs) is visible
-   on GitHub even if the site hides it.
+   on GitHub even if the site hides it. Never commit prospect lists,
+   interview notes or anyone's contact details.
+8. **Administrative tracking only.** RenewalTrail never verifies insurance,
+   determines legal compliance or certifies vendor eligibility — no copy,
+   status label or feature may say or imply it. `src/lib/claims.ts` is run
+   over every built page by `verify-build` and fails the build on such claims
+   (questions and negated sentences are allowed, so FAQs can say what it does
+   *not* do). Don't weaken the rules to make a build pass; reword the copy.
+9. **Nothing is for sale until a product is purchasable.** Prices are labelled
+   "planned"; pricing buttons lead to early access. While no product is
+   available, the claims guard also rejects "buy now"-style wording. Never
+   describe unbuilt features (sign-in, automatic emails, AI extraction,
+   document storage) as existing.
+10. **Demo data is fictional and labelled.** `src/config/demo.ts` uses made-up
+    vendors and people with relative dates; every place it appears says
+    "fictional" and that nothing is saved or sent.
 
 ## Architecture
 
@@ -47,11 +74,23 @@ src/lib/routes.ts         → every internal URL (trailing slashes!)
 src/lib/seo.ts            → JSON-LD builders (factual fields only)
 src/lib/csp.ts            → third-party hosts for the CSP, derived from config
 src/lib/search.ts         → client-side search scoring (pure, unit tested)
-src/pages/                → routes; dynamic routes use getStaticPaths from getCatalog()
+src/lib/renewals.ts       → renewal status rules + urgency sort (pure; the Starter Kit spec mirrors it)
+src/lib/renewal-demo-view.ts → HTML for demo rows/cards (pure; used by server render AND client script)
+src/lib/claims.ts         → claims guard used by verify-build (pure, unit tested)
+src/lib/brand.ts          → brandify(): replaces {brand} in copy with site.name
+src/config/landing.ts     → landing page copy and planned pricing ({brand} tokens)
+src/config/demo.ts        → fictional demo data
+src/config/copy.ts        → About/Contact/Help copy for both modes (+ portfolio home)
+src/config/navigation.ts  → getNavigation(mode, sections); landingAnchors
+src/components/landing/   → landing page sections (ProductLanding.astro composes them)
+src/pages/                → routes; dynamic routes use getStaticPaths from getCatalog();
+                            catalog indexes are [...index].astro so they can be skipped
 src/scripts/              → small client modules (theme, nav, reveal, search, filters, forms)
 scripts/                  → Node tooling: verify-build, preflight, generate-icons/og
 tests/unit/               → node:test unit tests (run with Node type stripping)
-tests/e2e/                → Playwright + axe against the FIXTURE build
+tests/e2e/                → Playwright + axe against the FIXTURE builds: dist-fixtures/
+                            (product mode, :4322) and dist-fixtures-portfolio/ (:4323,
+                            portfolio.spec.ts only)
 tests/fixtures/           → fixture content + site config covering every state
 ```
 
@@ -115,6 +154,14 @@ Run `npm run verify` before committing larger changes.
   sessions); `overrides` keeps `@axe-core/playwright` on the same core.
 
 ## Adding things (summary)
+
+- Landing copy: `src/config/landing.ts` (use `{brand}`, not the name). FAQ:
+  `src/content/faqs.yaml`. Run `npm run test:unit` — `tests/unit/landing.test.ts`
+  runs all public copy through the claims guard.
+- Status rules: change `src/lib/renewals.ts`, `tests/unit/renewals.test.ts`
+  and STARTER_KIT_SPEC.md §5 together.
+- Copy that depends on configuration (e.g. "Early access open") must check it:
+  `canRegister()` in `src/lib/catalog.ts`.
 
 - Product: copy `src/content/products/_template.md`; see CONTENT_MANAGEMENT.md.
 - Product line: add an entry to `src/content/businesses.yaml` (glyph/art enums

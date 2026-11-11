@@ -1,0 +1,234 @@
+---
+/**
+ * Early-access / research-interview registration — the main conversion.
+ *
+ * Renders a real form ONLY when a provider is configured (contact.form in
+ * src/config/site.ts): submissions go straight to Formspree or Web3Forms and
+ * land in your inbox. Without a provider it offers a prefilled email (when an
+ * address is configured), otherwise an honest "opens soon" state. Nothing is
+ * collected without a real destination.
+ */
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { contactEmail, getLegalLinks, site } from '../../lib/catalog.ts';
+import Button from '../ui/Button.astro';
+import ConfigNotice from '../ui/ConfigNotice.astro';
+import EmptyState from '../ui/EmptyState.astro';
+import Icon from '../ui/Icon.astro';
+
+const { register } = landing;
+const b = (text: string) => brandify(text, site.name);
+const config = site.contact.form;
+const email = contactEmail('business');
+const privacy = (await getLegalLinks()).find((link) => link.label === 'Privacy');
+const booking = site.earlyAccess.bookingUrl;
+
+const endpoint =
+  config.provider === 'formspree'
+    ? `https://formspree.io/f/${config.formId}`
+    : config.provider === 'web3forms'
+      ? 'https://api.web3forms.com/submit'
+      : null;
+const providerName = config.provider === 'formspree' ? 'Formspree' : 'Web3Forms';
+
+const mailto = email
+  ? `mailto:${email}?subject=${encodeURIComponent(`${site.name} early access`)}&body=${encodeURIComponent(
+      'Name:\nCompany:\nRole:\nApproximate number of vendors:\nInterested in (early access / interview / both):\n',
+    )}`
+  : null;
+---
+
+{
+  endpoint ? (
+    <div class="card relative overflow-hidden p-6 sm:p-8" data-early-access-root>
+      <form
+        id="early-access-form"
+        action={endpoint}
+        method="post"
+        class="space-y-6"
+        data-early-access-form
+        data-site-name={site.name}
+        data-fallback-email={email}
+      >
+        {config.provider === 'web3forms' && (
+          <>
+            <input type="hidden" name="access_key" value={config.accessKey} />
+            <input type="hidden" name="from_name" value={site.name} />
+          </>
+        )}
+        <input type="hidden" name="form" value="early-access" />
+        <input type="hidden" name={config.provider === 'formspree' ? '_subject' : 'subject'} value={`Early access — ${site.name}`} data-subject />
+
+        <fieldset>
+          <legend class="field-label">I’m interested in</legend>
+          <div class="flex flex-wrap gap-2">
+            {register.intents.map((intent, i) => (
+              <label class="chip chip-toggle min-h-10 px-4">
+                <input type="radio" class="sr-only" name="interest" value={intent.value} checked={i === 0} required data-intent-label={intent.label} />
+                {intent.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="ea-name" class="field-label">
+              Name
+            </label>
+            <input id="ea-name" name="name" type="text" required autocomplete="name" maxlength="120" class="input" />
+          </div>
+          <div>
+            <label for="ea-email" class="field-label">
+              Work email
+            </label>
+            <input id="ea-email" name="email" type="email" required autocomplete="email" inputmode="email" maxlength="200" class="input" />
+          </div>
+          <div>
+            <label for="ea-company" class="field-label">
+              Company
+            </label>
+            <input id="ea-company" name="company" type="text" required autocomplete="organization" maxlength="160" class="input" />
+          </div>
+          <div>
+            <label for="ea-role" class="field-label">
+              Your role <span class="font-normal text-ink-3">(optional)</span>
+            </label>
+            <select id="ea-role" name="role" class="input">
+              <option value="">Choose…</option>
+              {register.roles.map((role) => (
+                <option>{role}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label for="ea-vendors" class="field-label">
+              Vendors you work with
+            </label>
+            <select id="ea-vendors" name="vendors" required class="input">
+              <option value="">Choose…</option>
+              {register.vendorRanges.map((range) => (
+                <option>{range}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label for="ea-method" class="field-label">
+              How you track them today <span class="font-normal text-ink-3">(optional)</span>
+            </label>
+            <select id="ea-method" name="current_method" class="input">
+              <option value="">Choose…</option>
+              {register.methods.map((method) => (
+                <option>{method}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="ea-message" class="field-label">
+            What’s the hardest part today? <span class="font-normal text-ink-3">(optional)</span>
+          </label>
+          <textarea id="ea-message" name="message" maxlength="2000" rows="4" class="input min-h-[6rem]" />
+        </div>
+
+        <label class="flex items-start gap-3 text-sm text-ink-2">
+          <input type="checkbox" name="consent" value="yes" required class="mt-0.5 size-4 shrink-0 accent-[var(--accent)]" />
+          <span>{b(register.consent)}</span>
+        </label>
+
+        {config.provider === 'formspree' ? (
+          <div class="hidden" aria-hidden="true">
+            <label>
+              Leave this field empty
+              <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+        ) : (
+          <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        )}
+
+        <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p class="max-w-md text-xs text-ink-3">
+            Sent through {providerName}. We use your details only to reply about {site.name} early access and interviews.
+            {privacy && (
+              <>
+                {' '}
+                <a href={privacy.href} class="link">
+                  Privacy policy
+                </a>
+                .
+              </>
+            )}
+          </p>
+          <Button type="submit" arrow="right" data-submit>
+            <span data-submit-label>Request early access</span>
+          </Button>
+        </div>
+        <p class="text-sm" role="status" aria-live="polite" data-form-status />
+      </form>
+
+      <div class="hidden flex-col items-start gap-4 py-6" data-form-success>
+        <span class="grid size-12 place-items-center rounded-xl border border-[color-mix(in_oklch,var(--ok)_40%,transparent)] text-ok" aria-hidden="true">
+          <Icon name="circle-check" size={24} />
+        </span>
+        <h3 class="text-display-3 text-ink" tabindex="-1" data-success-heading>
+          {register.success.title}
+        </h3>
+        <p class="text-ink-2">
+          {register.success.body}
+          {site.contact.responseTime && ` We usually reply ${site.contact.responseTime}.`}
+        </p>
+        {booking && (
+          <Button href={booking} variant="secondary" external>
+            {site.earlyAccess.bookingLabel}
+          </Button>
+        )}
+      </div>
+    </div>
+  ) : mailto ? (
+    <div class="card p-6 sm:p-8">
+      <span class="inline-grid size-11 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
+        <Icon name="mail" size={20} />
+      </span>
+      <h3 class="mt-5 text-display-3 text-ink">Request early access by email.</h3>
+      <p class="mt-3 text-ink-2">Your email app opens with a short template — add your details and send.</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <Button href={mailto} icon="mail">
+          Email {email}
+        </Button>
+        {booking && (
+          <Button href={booking} variant="secondary" external>
+            {site.earlyAccess.bookingLabel}
+          </Button>
+        )}
+      </div>
+      <ConfigNotice title="Email fallback in use" class="mt-6">
+        Set <code>contact.form</code> in <code>src/config/site.ts</code> (Formspree or Web3Forms) to collect requests with the form instead.
+      </ConfigNotice>
+    </div>
+  ) : (
+    <div>
+      <EmptyState icon="mail" title="Early-access registration opens soon." headingLevel="h3">
+        <p>We are setting up a way to register. Please check back shortly.</p>
+        {booking && (
+          <Fragment slot="actions">
+            <Button href={booking} variant="secondary" external>
+              {site.earlyAccess.bookingLabel}
+            </Button>
+          </Fragment>
+        )}
+      </EmptyState>
+      <ConfigNotice title="Registration form is off" class="mt-6">
+        No form provider is configured, so visitors cannot register yet. Create a free Formspree form and set{' '}
+        <code>contact.form: {'{'} provider: 'formspree', formId: '…' {'}'}</code> in <code>src/config/site.ts</code> — see DEPLOYMENT.md. Until
+        then <code>npm run preflight</code> reports this as a launch blocker.
+      </ConfigNotice>
+    </div>
+  )
+}
+
+<script>
+  import { initEarlyAccessForm } from '../../scripts/early-access.ts';
+  document.querySelectorAll<HTMLFormElement>('[data-early-access-form]').forEach(initEarlyAccessForm);
+</script>

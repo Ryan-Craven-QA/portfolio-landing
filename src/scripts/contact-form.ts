@@ -1,9 +1,10 @@
 /**
- * Contact form enhancement: prefills topic/product from the URL, sends the
- * message in place (fetch with Accept: application/json — supported by both
- * Formspree and Web3Forms), and reports success or failure accessibly.
- * Without JavaScript the form still posts normally.
+ * Contact form enhancement: prefills topic/product from the URL and sends the
+ * message in place (see async-form.ts). Without JavaScript the form still
+ * posts normally.
  */
+import { sendFormInPlace } from './async-form.ts';
+
 export function initContactForm(form: HTMLFormElement) {
   const root = form.closest<HTMLElement>('[data-contact-root]');
   const status = form.querySelector<HTMLElement>('[data-form-status]');
@@ -47,43 +48,5 @@ export function initContactForm(form: HTMLFormElement) {
     }),
   );
 
-  form.addEventListener('submit', async (event) => {
-    if (!form.checkValidity()) return;
-    event.preventDefault();
-    if (submit) submit.disabled = true;
-    if (status) {
-      status.className = 'text-sm text-ink-2';
-      status.textContent = 'Sending…';
-    }
-    try {
-      const response = await fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { Accept: 'application/json' },
-      });
-      const body = (await response.json().catch(() => ({}))) as {
-        ok?: boolean;
-        success?: boolean;
-        message?: string;
-        errors?: Array<{ message?: string }>;
-      };
-      if (!response.ok || body.ok === false || body.success === false) {
-        throw new Error(body.errors?.map((e) => e.message).join(' ') || body.message || `Request failed (${response.status})`);
-      }
-      form.reset();
-      form.classList.add('hidden');
-      if (success) {
-        success.classList.remove('hidden');
-        success.classList.add('flex');
-        success.querySelector<HTMLElement>('[data-success-heading]')?.focus();
-      }
-    } catch {
-      if (status) {
-        status.className = 'text-sm text-danger';
-        status.textContent = `Your message could not be sent. Please try again${fallbackEmail ? `, or email ${fallbackEmail}` : ''}.`;
-      }
-    } finally {
-      if (submit) submit.disabled = false;
-    }
-  });
+  sendFormInPlace(form, { success: success ?? null, status, submit, fallbackEmail });
 }

@@ -93,6 +93,11 @@ export const siteConfigSchema = z
   .object({
     /** Brand name shown in the header, titles and metadata. */
     name: z.string().min(1),
+    /**
+     * Set to true only once trademark and domain clearance for `name` is
+     * complete. Until then `npm run preflight` reports it as a working name.
+     */
+    nameCleared: z.boolean().default(false),
     /** Registered business name for the copyright line, once you have one. */
     legalName: z.string().min(1).optional(),
     /** Short positioning line used in metadata and the footer. */
@@ -105,12 +110,41 @@ export const siteConfigSchema = z
     /** ISO 4217 currency used when a product offer does not specify one. */
     currency: z.string().length(3).default('USD'),
 
+    /**
+     * What the homepage shows:
+     * - "product": a single-product landing page (copy in src/config/landing.ts)
+     * - "portfolio": the multi-product studio homepage built from product lines
+     */
+    homepage: z.enum(['product', 'portfolio']).default('product'),
+
     /** Homepage hero copy. */
     hero: z.object({
       eyebrow: z.string().min(1),
       title: z.string().min(1).max(80),
       description: z.string().min(1).max(260),
     }),
+
+    /** Short scope statement shown in the footer of every page. */
+    disclaimer: z.string().min(1).max(400).optional(),
+
+    features: z
+      .object({
+        /** Site search (⌘K). Useful once there are many pages; off for a single-product site. */
+        search: z.boolean().default(false),
+      })
+      .default({ search: false }),
+
+    earlyAccess: z
+      .object({
+        /**
+         * Optional scheduling link for research interviews (Cal.com, Calendly,
+         * Google Calendar booking page…). Shown next to the registration form.
+         */
+        bookingUrl: httpsUrl.optional(),
+        /** Optional label for the scheduling link. */
+        bookingLabel: z.string().min(1).max(40).default('Pick a time for a 20-minute call'),
+      })
+      .default({ bookingLabel: 'Pick a time for a 20-minute call' }),
 
     contact: z
       .object({

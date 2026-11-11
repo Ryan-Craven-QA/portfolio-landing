@@ -33,7 +33,28 @@ describe('site configuration', () => {
   it('detects placeholder URLs', () => {
     assert.equal(isPlaceholderUrl('https://www.example.com'), true);
     assert.equal(isPlaceholderUrl('https://example.org'), true);
-    assert.equal(isPlaceholderUrl('https://plainwork.studio'), false);
+    assert.equal(isPlaceholderUrl('https://www.vendor-renewals-demo.com'), false);
+  });
+});
+
+describe('single-product settings', () => {
+  it('defaults to the product homepage with search off and no booking link', () => {
+    const minimal = parseSiteConfig({ ...siteInput, homepage: undefined, features: undefined, earlyAccess: undefined, nameCleared: undefined });
+    assert.equal(minimal.homepage, 'product');
+    assert.equal(minimal.features.search, false);
+    assert.equal(minimal.earlyAccess.bookingUrl, undefined);
+    assert.equal(minimal.earlyAccess.bookingLabel, 'Pick a time for a 20-minute call');
+    assert.equal(minimal.nameCleared, false);
+  });
+
+  it('accepts only https booking links and known homepage modes', () => {
+    assert.equal(withOverrides({ earlyAccess: { bookingUrl: 'https://cal.com/someone/intro' } }).earlyAccess.bookingUrl, 'https://cal.com/someone/intro');
+    assert.throws(() => withOverrides({ earlyAccess: { bookingUrl: 'http://cal.com/someone' } }), /earlyAccess/);
+    assert.throws(() => withOverrides({ homepage: 'shop' as never }), /homepage/);
+  });
+
+  it('keeps the disclaimer short enough for the footer', () => {
+    assert.throws(() => withOverrides({ disclaimer: 'x'.repeat(401) }), /disclaimer/);
   });
 });
 

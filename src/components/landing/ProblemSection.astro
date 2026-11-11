@@ -1,0 +1,59 @@
+---
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { site } from '../../lib/catalog.ts';
+import Callout from '../ui/Callout.astro';
+import Icon from '../ui/Icon.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  problemIndex: string;
+  solutionIndex: string;
+}
+
+const { problemIndex, solutionIndex } = Astro.props;
+const { problem, solution } = landing;
+const b = (text: string) => brandify(text, site.name);
+---
+
+<section id="problem" class="section scroll-mt-16 border-t border-line" aria-labelledby="problem-title">
+  <div class="container-site">
+    <SectionHeading id="problem-title" index={problemIndex} eyebrow={problem.eyebrow} title={problem.title} description={b(problem.description)} class="mb-12 md:mb-16" />
+    <ul class="grid gap-4 md:grid-cols-3">
+      {
+        problem.points.map((point, i) => (
+          <li class="reveal card relative p-7" style={`--i: ${i}`}>
+            <span class="inline-grid size-10 place-items-center rounded-xl border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
+              <Icon name={point.icon} size={19} />
+            </span>
+            <h3 class="mt-6 text-lg font-[620] tracking-[-0.015em] text-ink">{point.title}</h3>
+            <p class="mt-2 text-[0.9375rem] text-ink-2">{point.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<section id="solution" class="section scroll-mt-16 border-t border-line" aria-labelledby="solution-title">
+  <div class="container-site grid gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="lg:col-span-6">
+      <SectionHeading id="solution-title" index={solutionIndex} eyebrow={solution.eyebrow} title={solution.title} description={b(solution.description)} />
+      <Callout tone="caution" title="Administrative tracking only" class="reveal mt-10">
+        {b(solution.scope)}
+      </Callout>
+    </div>
+    <ul class="reveal space-y-3 self-end lg:col-span-6">
+      {
+        solution.points.map((point) => (
+          <li class="flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-surface p-4 text-ink-2">
+            <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-accent-soft text-accent" aria-hidden="true">
+              <Icon name="check" size={13} strokeWidth={2.2} />
+            </span>
+            {point}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

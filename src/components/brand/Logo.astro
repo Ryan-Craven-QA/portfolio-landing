@@ -11,5 +11,5 @@ const { href = '/', class: className } = Astro.props;
 
 <a href={href} class:list={['group inline-flex items-center gap-2.5 rounded-md', className]} aria-label={`${site.name} — home`}>
   <LogoMark size={24} class="text-ink transition-transform duration-500 ease-out-expo group-hover:rotate-90" />
-  <span class="text-[1.0625rem] font-[650] lowercase tracking-[-0.035em] text-ink">{site.name}</span>
+  <span class="text-[1.0625rem] font-[650] tracking-[-0.03em] text-ink">{site.name}</span>
 </a>

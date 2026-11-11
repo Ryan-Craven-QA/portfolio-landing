@@ -28,7 +28,7 @@ const { jsonLd = [], ...head } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <SearchDialog />
+    {site.features.search && <SearchDialog />}
     <script>
       import '../scripts/site.ts';
     </script>

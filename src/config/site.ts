@@ -1,38 +1,57 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────────
  *  SITE CONFIGURATION
- *  Brand, contact channels, newsletter, analytics and legal links.
+ *  Brand, homepage mode, contact channels, analytics and legal links.
  *  Everything is validated at build time (see src/lib/schemas/site.ts).
  *  Run `npm run preflight` to see what is still missing before launch.
  * ─────────────────────────────────────────────────────────────────────────────
  *
- *  Product lines, products, solutions and resources live in src/content/.
- *  See CONTENT_MANAGEMENT.md.
+ *  Landing-page copy (problem, features, pricing…) lives in src/config/landing.ts.
+ *  The demo's fictional data lives in src/config/demo.ts.
  */
 import { defineSiteConfig } from '../lib/schemas/site.ts';
 
 export default defineSiteConfig({
-  // "Plainwork" is a working name. Check trademark and domain availability
-  // before launch; changing it here updates the whole site.
-  name: 'Plainwork',
-  // legalName: 'Plainwork LLC',
+  // "RenewalTrail" is a WORKING NAME until trademark and domain clearance is
+  // complete. Changing it here updates every page; copy uses a {brand} token.
+  name: 'RenewalTrail',
+  nameCleared: false,
+  // legalName: 'Your Company LLC',
 
-  tagline: 'Practical software, templates, and guides for everyday work.',
+  tagline: 'Vendor document renewal tracking for small property-management companies.',
   description:
-    'Plainwork is an independent studio making practical software, templates, and plain-language guides that take the friction out of everyday work.',
+    'Track vendor document expiration dates, renewal requests, and follow-ups in one place. Built for small property-management companies. In development.',
 
-  // Canonical production URL. The SITE_URL environment variable overrides it
-  // (set SITE_URL in Cloudflare Pages). While this is a placeholder, builds are
-  // marked `noindex` so search engines never index the wrong domain.
+  // Canonical production URL. The SITE_URL environment variable overrides it.
+  // While this is a placeholder, builds are marked `noindex`.
   url: 'https://www.example.com',
   locale: 'en-US',
   currency: 'USD',
 
+  // Single-product landing page. Switch to 'portfolio' to bring back the
+  // multi-product studio homepage built from src/content/businesses.yaml.
+  homepage: 'product',
+
   hero: {
-    eyebrow: 'Independent software studio',
-    title: 'Practical tools for the unglamorous work.',
+    // " · Early access open" is added automatically once a form or email is configured.
+    eyebrow: 'In development',
+    title: 'Know what expires next—and who’s following up.',
     description:
-      'Plainwork makes focused software, ready-to-use templates, and plain-language guides that take the friction out of everyday tasks.',
+      'We’re building RenewalTrail for small property-management companies: one place to track vendor document expiration dates, renewal requests, and who owns each follow-up.',
+  },
+
+  // Shown in the footer of every page. Keep it — the product only supports
+  // administrative tracking.
+  disclaimer:
+    'RenewalTrail is an administrative tracking tool. It does not verify insurance coverage, determine legal compliance, or certify vendor eligibility.',
+
+  features: {
+    search: false,
+  },
+
+  earlyAccess: {
+    // Optional: a scheduling page for research interviews (Cal.com, Calendly…).
+    // bookingUrl: 'https://cal.com/your-name/renewaltrail-interview',
   },
 
   contact: {
@@ -41,7 +60,8 @@ export default defineSiteConfig({
     // support: 'support@yourdomain.com',
     // business: 'partners@yourdomain.com',
 
-    // A form provider lets visitors write to you without exposing an address.
+    // The early-access form and the contact form post to this provider.
+    // Until one is set, NO form is shown (no data is collected).
     // form: { provider: 'formspree', formId: 'xxxxxxxx' },
     // form: { provider: 'web3forms', accessKey: '00000000-0000-0000-0000-000000000000' },
     form: { provider: 'none' },
@@ -49,17 +69,14 @@ export default defineSiteConfig({
     // responseTime: 'within two business days',
   },
 
-  // Product-update emails. Until a provider is configured the site offers the
-  // RSS feed instead of a sign-up form, so no email addresses are collected.
-  // newsletter: { provider: 'buttondown', username: 'yourname' },
-  // newsletter: { provider: 'kit', formId: '1234567' },
+  // Optional product-update emails. The early-access form already covers
+  // launch updates, so this can stay off.
   newsletter: { provider: 'none' },
 
   // Privacy-friendly analytics. Off until you choose a provider.
   // analytics: { provider: 'cloudflare', token: '0123456789abcdef0123456789abcdef' },
   analytics: { provider: 'none' },
 
-  // social: [{ label: 'GitHub', url: 'https://github.com/your-handle' }],
   social: [],
 
   // Optional founder section on the About page. Write it in your own words.
@@ -67,22 +84,16 @@ export default defineSiteConfig({
   //   name: 'Your Name',
   //   role: 'Founder',
   //   bio: ['First paragraph.', 'Second paragraph.'],
-  //   photo: '/images/founder.jpg',
-  //   photoAlt: 'Portrait of Your Name',
   //   links: [{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/your-handle' }],
   // },
 
   legal: {
-    // Use these if your policies are hosted elsewhere; otherwise publish the
-    // pages in src/content/legal/.
     // privacyUrl: 'https://...',
     // termsUrl: 'https://...',
     // refundsUrl: 'https://...',
   },
 
   checkout: {
-    // Well-known checkout hosts (Gumroad, Stripe, Lemon Squeezy, Paddle,
-    // Polar, Payhip) are allowed by default. Add your own storefront host here.
     extraAllowedHosts: [],
   },
 });

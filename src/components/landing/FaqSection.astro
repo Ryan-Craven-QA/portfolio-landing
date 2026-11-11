@@ -1,0 +1,31 @@
+---
+import { landing } from '../../config/landing.ts';
+import { getCatalog } from '../../lib/catalog.ts';
+import FaqList from '../ui/FaqList.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { faqs } = await getCatalog();
+---
+
+{
+  faqs.length > 0 && (
+    <section id="faq" class="section scroll-mt-16 border-t border-line" aria-labelledby="faq-title">
+      <div class="container-site grid gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <p class="eyebrow">
+            <span class="tabular text-ink-2">{index}</span>
+            {landing.faq.eyebrow}
+          </p>
+          <h2 id="faq-title" class="mt-5 text-display-2 text-ink">
+            {landing.faq.title}
+          </h2>
+        </div>
+        <FaqList class="reveal lg:col-span-8" items={faqs} />
+      </div>
+    </section>
+  )
+}

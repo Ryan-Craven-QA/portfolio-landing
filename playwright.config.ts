@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * End-to-end tests run against the FIXTURE build (tests/fixtures), which
- * exercises every product, pricing and visibility state. `npm run test:e2e`
- * builds it first.
+ * End-to-end tests run against the FIXTURE builds (tests/fixtures), which
+ * exercise every product, pricing and visibility state:
+ *  - dist-fixtures/            single-product landing page (the live mode), port 4322
+ *  - dist-fixtures-portfolio/  the optional portfolio homepage, port 4323
+ * `npm run test:e2e` builds both first.
  */
 const PORT = 4322;
+const PORTFOLIO_PORT = 4323;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -18,13 +21,26 @@ export default defineConfig({
     trace: 'off',
   },
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } }, testIgnore: /mobile\.spec\.ts/ },
+    { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } }, testIgnore: /(mobile|portfolio)\.spec\.ts/ },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /(mobile|a11y)\.spec\.ts/ },
+    {
+      name: 'portfolio',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, baseURL: `http://localhost:${PORTFOLIO_PORT}` },
+      testMatch: /portfolio\.spec\.ts/,
+    },
   ],
-  webServer: {
-    command: `npx astro preview --config astro.fixtures.config.ts --port ${PORT} --ignore-lock`,
-    url: `http://localhost:${PORT}/`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: `npx astro preview --config astro.fixtures.config.ts --port ${PORT} --ignore-lock`,
+      url: `http://localhost:${PORT}/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      command: `npx astro preview --config astro.fixtures-portfolio.config.ts --port ${PORTFOLIO_PORT} --ignore-lock`,
+      url: `http://localhost:${PORTFOLIO_PORT}/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 });

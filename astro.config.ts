@@ -2,7 +2,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, fontProviders } from 'astro/config';
-import { IS_FIXTURE_BUILD, loadSiteConfig, resolveSiteUrl } from './src/config/load.ts';
+import { IS_FIXTURE_BUILD, IS_PORTFOLIO_FIXTURE_BUILD, loadSiteConfig, resolveSiteUrl } from './src/config/load.ts';
 import { cspDirectives } from './src/lib/csp.ts';
 
 const site = loadSiteConfig();
@@ -17,8 +17,8 @@ const LATIN_RANGE =
 export default defineConfig({
   site: siteUrl,
   trailingSlash: 'always',
-  outDir: IS_FIXTURE_BUILD ? './dist-fixtures' : './dist',
-  cacheDir: IS_FIXTURE_BUILD ? './node_modules/.astro-fixtures' : './node_modules/.astro',
+  outDir: IS_PORTFOLIO_FIXTURE_BUILD ? './dist-fixtures-portfolio' : IS_FIXTURE_BUILD ? './dist-fixtures' : './dist',
+  cacheDir: IS_PORTFOLIO_FIXTURE_BUILD ? './node_modules/.astro-fixtures-portfolio' : IS_FIXTURE_BUILD ? './node_modules/.astro-fixtures' : './node_modules/.astro',
   build: { format: 'directory', inlineStylesheets: 'auto' },
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
 

@@ -9,11 +9,17 @@ import FilterChips from '../../components/ui/FilterChips.astro';
 import Icon from '../../components/ui/Icon.astro';
 import PageHeader from '../../components/ui/PageHeader.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCatalog, site } from '../../lib/catalog.ts';
+import { getCatalog, getSections, site } from '../../lib/catalog.ts';
 import { pluralize } from '../../lib/format.ts';
 import { routes } from '../../lib/routes.ts';
 import { AVAILABILITY, PRODUCT_TYPES } from '../../lib/schemas/content.ts';
 import { breadcrumbLd } from '../../lib/seo.ts';
+
+// Built only while at least one product line is public (rest param: undefined → /products/).
+export async function getStaticPaths() {
+  const sections = await getSections();
+  return sections.products ? [{ params: { index: undefined } }] : [];
+}
 
 const { lines, products, resources } = await getCatalog();
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');

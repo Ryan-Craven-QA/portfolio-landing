@@ -4,7 +4,7 @@
  * configured in src/config/site.ts. Otherwise it offers the RSS feed, so no
  * email address is ever collected without a destination.
  */
-import { getLegalLinks, site } from '../../lib/catalog.ts';
+import { getLegalLinks, getSections, site } from '../../lib/catalog.ts';
 import { newsletterTarget } from '../../lib/newsletter.ts';
 import { routes } from '../../lib/routes.ts';
 import Button from '../ui/Button.astro';
@@ -17,6 +17,7 @@ interface Props {
 const { idPrefix = 'newsletter' } = Astro.props;
 const target = newsletterTarget(site);
 const privacy = (await getLegalLinks()).find((link) => link.label === 'Privacy');
+const sections = await getSections();
 const inputId = `${idPrefix}-email`;
 ---
 
@@ -72,9 +73,11 @@ const inputId = `${idPrefix}-email`;
         <Button href={routes.rss} variant="secondary" icon="rss">
           Subscribe via RSS
         </Button>
-        <Button href={routes.resources} variant="ghost" arrow="right">
-          Browse resources
-        </Button>
+        {sections.resources && (
+          <Button href={routes.resources} variant="ghost" arrow="right">
+            Browse resources
+          </Button>
+        )}
       </div>
       <p class="text-sm text-ink-3">
         Or paste <code class="mono break-all text-ink-2">{new URL(routes.rss, Astro.site ?? `${site.url}/`).href}</code> into any feed reader.

@@ -1,5 +1,7 @@
 ---
 import { principles } from '../../config/copy.ts';
+import { brandify } from '../../lib/brand.ts';
+import { site } from '../../lib/catalog.ts';
 import Icon from '../ui/Icon.astro';
 ---
 
@@ -15,8 +17,8 @@ import Icon from '../ui/Icon.astro';
             {String(index + 1).padStart(2, '0')}
           </span>
         </div>
-        <h3 class="mt-6 text-lg font-[620] tracking-[-0.015em] text-ink">{principle.title}</h3>
-        <p class="mt-2 text-[0.9375rem] text-ink-2">{principle.body}</p>
+        <h3 class="mt-6 text-lg font-[620] tracking-[-0.015em] text-ink">{brandify(principle.title, site.name)}</h3>
+        <p class="mt-2 text-[0.9375rem] text-ink-2">{brandify(principle.body, site.name)}</p>
       </li>
     ))
   }

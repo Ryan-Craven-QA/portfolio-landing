@@ -1,0 +1,48 @@
+---
+/**
+ * Single-product landing page (homepage: 'product').
+ * Copy: src/config/landing.ts · Demo data: src/config/demo.ts · FAQ: src/content/faqs.yaml
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site } from '../../lib/catalog.ts';
+import { organizationLd, websiteLd } from '../../lib/seo.ts';
+import AudienceSection from './AudienceSection.astro';
+import ContactSection from './ContactSection.astro';
+import DemoSection from './DemoSection.astro';
+import FaqSection from './FaqSection.astro';
+import FeaturesSection from './FeaturesSection.astro';
+import HowItWorks from './HowItWorks.astro';
+import LandingHero from './LandingHero.astro';
+import PricingSection from './PricingSection.astro';
+import ProblemSection from './ProblemSection.astro';
+import RegisterSection from './RegisterSection.astro';
+
+const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+let n = 0;
+const next = () => String(++n).padStart(2, '0');
+const idx = {
+  problem: next(),
+  solution: next(),
+  demo: next(),
+  features: next(),
+  how: next(),
+  audience: next(),
+  pricing: next(),
+  faq: next(),
+  register: next(),
+  contact: next(),
+};
+---
+
+<BaseLayout title={`${site.name} — ${site.tagline}`} rawTitle jsonLd={[organizationLd(site, siteUrl), websiteLd(site, siteUrl)]}>
+  <LandingHero />
+  <ProblemSection problemIndex={idx.problem} solutionIndex={idx.solution} />
+  <DemoSection index={idx.demo} />
+  <FeaturesSection index={idx.features} />
+  <HowItWorks index={idx.how} />
+  <AudienceSection index={idx.audience} />
+  <PricingSection index={idx.pricing} />
+  <FaqSection index={idx.faq} />
+  <RegisterSection index={idx.register} />
+  <ContactSection index={idx.contact} />
+</BaseLayout>

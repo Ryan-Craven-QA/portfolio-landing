@@ -1,0 +1,63 @@
+---
+import { landing } from '../../config/landing.ts';
+import Icon from '../ui/Icon.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { audience } = landing;
+---
+
+<section id="who-its-for" class="section scroll-mt-16 border-t border-line" aria-labelledby="audience-title">
+  <div class="container-site">
+    <SectionHeading id="audience-title" index={index} eyebrow={audience.eyebrow} title={audience.title} description={audience.description} class="mb-12" />
+
+    <div class="grid gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <div class="reveal card p-7 sm:p-8">
+        <h3 class="eyebrow text-ok">A good fit if</h3>
+        <ul class="mt-5 space-y-3.5">
+          {
+            audience.fit.map((item) => (
+              <li class="flex items-start gap-3 text-ink-2">
+                <Icon name="check" size={17} class="mt-0.5 text-ok" />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div class="reveal rounded-[var(--radius-card)] border border-dashed border-line-strong p-7 sm:p-8" style="--i: 1">
+        <h3 class="eyebrow">Not the right fit if</h3>
+        <ul class="mt-5 space-y-3.5">
+          {
+            audience.notFit.map((item) => (
+              <li class="flex items-start gap-3 text-ink-2">
+                <Icon name="x" size={17} class="mt-0.5 text-ink-3" />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <ul class="mt-5 grid gap-5 sm:grid-cols-3">
+      {
+        audience.roles.map((role, i) => (
+          <li class="reveal flex items-start gap-4 rounded-[var(--radius-card)] border border-line p-5" style={`--i: ${i + 2}`}>
+            <span class="inline-grid size-9 shrink-0 place-items-center rounded-full border border-line-strong bg-surface-2 text-ink-2" aria-hidden="true">
+              <Icon name="user" size={16} />
+            </span>
+            <span>
+              <span class="block font-medium text-ink">{role.title}</span>
+              <span class="mt-1 block text-sm text-ink-2">{role.body}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

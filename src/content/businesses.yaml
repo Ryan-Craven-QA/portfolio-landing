@@ -1,19 +1,47 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  PRODUCT LINES
-#  Each entry is one product line ("business"). Visitors see these as product
-#  lines; internal strategy never appears on the site.
+#  The site currently runs in single-product mode (homepage: 'product' in
+#  src/config/site.ts): the homepage is the RenewalTrail landing page and no
+#  product line is public, so no catalog pages are built.
 #
 #  visible   true  → listed on the site, gets its own page at /products/<id>/
 #            false → hidden everywhere, and so are all of its products
 #  status    exploring | in-development | coming-soon | early-access | available
-#            Anything but "available" shows as a badge, so a line is never
-#            presented as operational before it is.
 #  hue       0–360 on the OKLCH colour wheel; drives the line's accent colour.
 #  glyph     flow | plug | calendar | grid | shield
 #  art       document-fields | plugin-toggles | calendar-grid | file-stack | message-check
 #
-#  Launching with a single line: set `visible: false` on the others.
+#  When the RenewalTrail Starter Kit is ready to sell: set `visible: true` on
+#  the renewaltrail line and `visibility: public` + `availability: available`
+#  on src/content/products/renewaltrail-starter-kit.md. The catalog pages
+#  (/products/…) then appear automatically.
 # ─────────────────────────────────────────────────────────────────────────────
+
+- id: renewaltrail
+  name: RenewalTrail
+  tagline: Vendor document renewal tracking for small property-management companies.
+  description: >-
+    Track vendor document expiration dates, renewal requests, and who owns each
+    follow-up — starting with a spreadsheet Starter Kit.
+  visible: false
+  status: exploring
+  order: 1
+  hue: 200
+  glyph: calendar
+  art: calendar-grid
+  audience: Independent property-management companies working with 10–100 vendors
+  disclaimer: >-
+    RenewalTrail is an administrative tracking tool. It does not verify
+    insurance coverage, determine legal compliance, or certify vendor
+    eligibility.
+  examples:
+    - Vendor document tracker (Excel and Google Sheets)
+    - Renewal request templates
+    - Setup and weekly-routine guide
+
+# ── Archived portfolio lines (hidden) ───────────────────────────────────────
+# Kept so the multi-product architecture can be reused. They are not built,
+# linked, searched or listed while `visible: false`.
 
 - id: operations-software
   name: Operations Software
@@ -22,7 +50,7 @@
     Software for small businesses that handles the busywork around documents and
     workflows — pulling details out of files, organizing information, and moving
     routine tasks along without manual copy-and-paste.
-  visible: true
+  visible: false
   status: in-development
   order: 10
   hue: 255
@@ -42,7 +70,7 @@
     Focused plugins for the administrative side of WordPress — keeping track of
     documents and media, handling routine maintenance, and making day-to-day site
     management faster for site owners and agencies.
-  visible: true
+  visible: false
   status: in-development
   order: 20
   hue: 200
@@ -62,7 +90,7 @@
     Downloadable toolkits that help small employers keep recurring administrative
     work in order — checklists, deadline calendars, and document templates that
     turn scattered tasks into a dependable routine.
-  visible: true
+  visible: false
   status: in-development
   order: 30
   hue: 150
@@ -86,7 +114,7 @@
     A growing shelf of immediately useful digital products — spreadsheet
     templates, calculators, planning resources, and reusable automation and AI
     workflow templates — each designed around one job.
-  visible: true
+  visible: false
   status: in-development
   order: 40
   hue: 85
@@ -108,7 +136,7 @@
     Educational resources that help everyday families use technology with
     confidence — recognizing scams, protecting accounts, and building safer
     digital habits across generations.
-  visible: true
+  visible: false
   status: in-development
   order: 50
   hue: 350

@@ -418,6 +418,23 @@ function toProduct(entry: ProductEntry, line: Line, isPublic: boolean): Product 
 
 /* ───────────────────────────── helpers ───────────────────────────── */
 
+/**
+ * Which optional sections have public content. Their index pages
+ * (/products/, /solutions/, /resources/) are generated only when true, and
+ * navigation, footer, search and 404 links follow the same flags — so a
+ * single-product site never links to an empty catalog.
+ */
+export interface Sections {
+  products: boolean;
+  solutions: boolean;
+  resources: boolean;
+}
+
+export async function getSections(): Promise<Sections> {
+  const { lines, solutions, resources } = await getCatalog();
+  return { products: lines.length > 0, solutions: solutions.length > 0, resources: resources.length > 0 };
+}
+
 export async function getRelatedProducts(product: Product, limit = 3): Promise<Product[]> {
   const { products, productsById } = await getCatalog();
   const explicit = product.data.related.map((id) => productsById.get(id)).filter((p): p is Product => p !== undefined);
@@ -435,6 +452,15 @@ export async function getResourcesForProduct(product: Product, limit = 4): Promi
 
 export function contactEmail(kind: 'general' | 'support' | 'business'): string | undefined {
   return site.contact[kind] ?? site.contact.general;
+}
+
+/**
+ * Whether early-access requests can actually reach you: a form provider, or an
+ * email address for the email fallback. Copy such as "Early access open" is
+ * only shown while this is true.
+ */
+export function canRegister(): boolean {
+  return site.contact.form.provider !== 'none' || Boolean(contactEmail('business'));
 }
 
 /** Legal links for the footer: external URLs from config win over internal pages. */

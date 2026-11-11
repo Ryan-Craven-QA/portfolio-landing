@@ -23,11 +23,13 @@ if (existsSync('.env')) {
 }
 
 export const IS_FIXTURE_BUILD = process.env.SITE_FIXTURES === '1';
+/** Second fixture build that renders the portfolio homepage (astro.fixtures-portfolio.config.ts). */
+export const IS_PORTFOLIO_FIXTURE_BUILD = IS_FIXTURE_BUILD && process.env.SITE_FIXTURE_HOMEPAGE === 'portfolio';
 
 export function loadSiteConfig(): SiteConfig {
-  return IS_FIXTURE_BUILD
-    ? parseSiteConfig(fixtureConfig, 'tests/fixtures/site.config.ts')
-    : parseSiteConfig(productionConfig, 'src/config/site.ts');
+  if (!IS_FIXTURE_BUILD) return parseSiteConfig(productionConfig, 'src/config/site.ts');
+  const input = IS_PORTFOLIO_FIXTURE_BUILD ? { ...fixtureConfig, homepage: 'portfolio' as const } : fixtureConfig;
+  return parseSiteConfig(input, 'tests/fixtures/site.config.ts');
 }
 
 /** Canonical origin: SITE_URL env var wins over the config file. */

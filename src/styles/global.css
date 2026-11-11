@@ -1,6 +1,6 @@
 /*
  * ─────────────────────────────────────────────────────────────────────────────
- *  PLAINWORK DESIGN SYSTEM — see DESIGN_SYSTEM.md
+ *  DESIGN SYSTEM — see DESIGN_SYSTEM.md
  *  Tokens → Tailwind theme → base → components → prose → motion
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -212,6 +212,11 @@
 
   /* Hide JS-only controls when scripts are unavailable. */
   html:not(.js) [data-requires-js] {
+    display: none !important;
+  }
+
+  /* The opposite: only shown when JavaScript is off (the head script adds .js before first paint). */
+  html.js [data-no-js] {
     display: none !important;
   }
 }

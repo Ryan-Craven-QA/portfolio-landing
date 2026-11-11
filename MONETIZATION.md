@@ -1,5 +1,26 @@
 # Monetization
 
+## Where RenewalTrail stands today
+
+**Nothing is for sale.** The landing page shows *planned* prices only; every pricing button leads to the
+early-access form, the site renders no purchase buttons, and the build's claims guard fails on "buy now"-style
+wording while no product is purchasable.
+
+| Stage | How money changes hands | On the website? |
+| --- | --- | --- |
+| **Validation** (now) | Founding pre-orders at the planned founding price, through a checkout link you send privately after an interview, with a written delivery date and a full refund if it's missed ([VALIDATION_PLAN.md](VALIDATION_PLAN.md) §3). | No. Before taking the first pre-order, update the landing copy so the site doesn't say "nothing is for sale" while you're selling (e.g. "Founding pre-orders open to interview participants"). |
+| **Starter Kit on sale** (after a GO decision) | One-time purchase through a merchant of record that delivers the zip. | Yes, through a published product with a verified `checkoutUrl`, rendered by `OfferAction` (see below and ROADMAP.md #10). |
+| **Hosted software** (only with clear demand) | Monthly subscription through a merchant of record. | Later. |
+
+For a one-time digital download sold to small businesses, a merchant of record (Lemon Squeezy, Paddle,
+Polar or Gumroad) is the simplest: it handles sales tax and VAT, receipts and file delivery. A Stripe
+Payment Link has the lowest fees if you handle tax yourself. This isn't tax advice: confirm your
+obligations with an accountant.
+
+---
+
+## How selling works on this site
+
 The site sells through **hosted checkout pages** — Gumroad, Stripe Payment
 Links, Lemon Squeezy, Paddle, Polar, Payhip, or a storefront domain you allow.
 Payment details are entered on the provider's page, never on this site. There
@@ -58,16 +79,15 @@ accountant.
 
 ### A sensible starting setup
 
-- **Templates, toolkits, guides, family resources:** Gumroad or Payhip — they
-  host the files and deliver downloads after payment.
-- **WordPress plugins (annual licenses, updates):** an MoR with license keys
-  (Lemon Squeezy, Paddle or Polar). WordPress-specific platforms such as
-  Freemius also handle licensing and in-dashboard updates — evaluate their
-  current terms.
-- **Operations software (subscriptions):** Paddle or Polar (MoR), or Stripe
-  Payment Links plus the Stripe customer portal if you handle tax.
-- **Organization licenses:** start with "Contact us for pricing" and invoice
-  through your provider; add a fixed-price tier once demand is clear.
+- **The RenewalTrail Starter Kit (one-time download):** an MoR that hosts the file and delivers it after
+  payment: Lemon Squeezy, Polar, Paddle, Gumroad or Payhip. The Google Sheets version is a "Make a copy"
+  link inside the kit, so nothing extra is needed for it.
+- **Founding pre-orders:** the same provider, as a separate pre-order product with the delivery date and
+  refund terms in its description.
+- **Hosted software (later, subscriptions):** Paddle or Polar (MoR), or Stripe Payment Links plus the Stripe
+  customer portal if you handle tax.
+- **Team or multi-company licenses:** start with "Contact us for pricing" and invoice through your provider;
+  add a fixed-price tier once demand is clear.
 
 Use **one provider per product type** at first; the site supports mixing them.
 

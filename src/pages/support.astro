@@ -1,11 +1,14 @@
 ---
+import { supportPage } from '../config/copy.ts';
 import Button from '../components/ui/Button.astro';
 import EmptyState from '../components/ui/EmptyState.astro';
 import FaqList from '../components/ui/FaqList.astro';
 import Icon from '../components/ui/Icon.astro';
 import PageHeader from '../components/ui/PageHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { CAN_CONTACT, getCatalog, site, type Faq } from '../lib/catalog.ts';
+import { brandify } from '../lib/brand.ts';
+import { CAN_CONTACT, getCatalog, site } from '../lib/catalog.ts';
+import type { IconName } from '../lib/icons.ts';
 import { pluralize } from '../lib/format.ts';
 import { routes } from '../lib/routes.ts';
 import { breadcrumbLd } from '../lib/seo.ts';
@@ -14,49 +17,82 @@ const { faqs, resources } = await getCatalog();
 const docs = resources.filter((resource) => resource.type === 'documentation');
 const guides = resources.filter((resource) => resource.type === 'guide' || resource.type === 'tutorial');
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
+const copy = supportPage[site.homepage];
+const b = (text: string) => brandify(text, site.name);
+const contactHref = site.homepage === 'product' ? routes.contact : routes.contactTopic('support');
 
-const groups: Array<{ id: Faq['category']; title: string }> = [
-  { id: 'purchasing', title: 'Buying and licensing' },
-  { id: 'products', title: 'Products' },
-  { id: 'support', title: 'Getting help' },
-  { id: 'general', title: 'General' },
-];
+interface Card {
+  icon: IconName;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+}
 
-const cards = [
-  {
-    icon: 'book' as const,
-    title: 'Documentation',
-    body: docs.length > 0 ? `${pluralize(docs.length, 'product guide')} covering setup and everyday use.` : 'Product documentation is published alongside each release.',
-    href: docs.length > 0 ? `${routes.resources}?type=documentation` : routes.resources,
-    cta: docs.length > 0 ? 'Read the docs' : 'Browse the library',
-  },
-  {
-    icon: 'file' as const,
-    title: 'Guides and tutorials',
-    body: guides.length > 0 ? `${pluralize(guides.length, 'free guide')} on the work our products support.` : 'Practical guides will be published here.',
-    href: routes.resources,
-    cta: 'Browse guides',
-  },
-  {
-    icon: 'lifebuoy' as const,
-    title: 'Contact support',
-    body: CAN_CONTACT ? 'Can’t find what you need? Send us the details and we’ll help.' : 'Support contact options are being set up.',
-    href: routes.contactTopic('support'),
-    cta: 'Get help',
-  },
+const contactCard: Card = {
+  icon: 'lifebuoy',
+  title: site.homepage === 'product' ? 'Contact us' : 'Contact support',
+  body: CAN_CONTACT
+    ? site.homepage === 'product'
+      ? 'Can’t find what you need? Send us your question.'
+      : 'Can’t find what you need? Send us the details and we’ll help.'
+    : 'Contact options are being set up.',
+  href: contactHref,
+  cta: site.homepage === 'product' ? 'Get in touch' : 'Get help',
+};
+
+const cards: Card[] = [
+  // Library cards only when there is a public library to link to.
+  ...(resources.length > 0
+    ? [
+        {
+          icon: 'book' as const,
+          title: 'Documentation',
+          body: docs.length > 0 ? `${pluralize(docs.length, 'product guide')} covering setup and everyday use.` : 'Product documentation is published alongside each release.',
+          href: docs.length > 0 ? `${routes.resources}?type=documentation` : routes.resources,
+          cta: docs.length > 0 ? 'Read the docs' : 'Browse the library',
+        },
+        {
+          icon: 'file' as const,
+          title: 'Guides and tutorials',
+          body: guides.length > 0 ? `${pluralize(guides.length, 'free guide')} on the work our products support.` : 'Practical guides will be published here.',
+          href: routes.resources,
+          cta: 'Browse guides',
+        },
+      ]
+    : [
+        {
+          icon: 'info' as const,
+          title: 'Frequently asked questions',
+          body: 'What it will do, what it won’t, how your data is handled, and planned pricing.',
+          href: '#faq',
+          cta: 'Read the answers',
+        },
+        ...(site.homepage === 'product'
+          ? [
+              {
+                icon: 'calendar' as const,
+                title: 'Early access and interviews',
+                body: `Join the early-access list, or help shape ${site.name} in a 20-minute interview.`,
+                href: `${routes.home}?interest=early-access#register`,
+                cta: 'Request early access',
+              },
+            ]
+          : []),
+      ]),
+  contactCard,
 ];
 ---
-
 <BaseLayout
-  title="Support"
-  description={`Help, answers, and documentation for ${site.name} products — plus how to contact support.`}
-  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'Support', href: routes.support }], siteUrl)]}
+  title={copy.pageTitle}
+  description={b(copy.metaDescription)}
+  jsonLd={[breadcrumbLd([{ label: 'Home', href: '/' }, { label: copy.eyebrow, href: routes.support }], siteUrl)]}
 >
   <PageHeader
-    eyebrow="Support"
-    title="Help and answers."
-    description="Start with the documentation and common questions. If you’re still stuck, contact support."
-    breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Support' }]}
+    eyebrow={copy.eyebrow}
+    title={b(copy.title)}
+    description={b(copy.description)}
+    breadcrumbs={[{ label: 'Home', href: '/' }, { label: copy.eyebrow }]}
   />
 
   <section class="container-site py-12 md:py-16" aria-label="Support options">
@@ -88,12 +124,12 @@ const cards = [
       {
         faqs.length > 0 ? (
           <div class="mt-12 space-y-14">
-            {groups.map((group) => {
+            {copy.groups.map((group) => {
               const items = faqs.filter((faq) => faq.category === group.id);
               return (
                 items.length > 0 && (
                   <div class="grid gap-6 lg:grid-cols-12">
-                    <h3 class="eyebrow lg:col-span-3 lg:pt-6">{group.title}</h3>
+                    <h3 class="eyebrow self-start lg:col-span-3 lg:pt-6">{b(group.title)}</h3>
                     <FaqList class="lg:col-span-9" items={items} />
                   </div>
                 )
@@ -102,7 +138,7 @@ const cards = [
           </div>
         ) : (
           <EmptyState icon="info" title="No questions here yet." class="mt-10" headingLevel="h3">
-            <p>Answers to common questions will be added as products launch.</p>
+            <p>Answers to common questions will be added here.</p>
           </EmptyState>
         )
       }
@@ -112,10 +148,10 @@ const cards = [
   <section class="border-t border-line" aria-labelledby="still-stuck-title">
     <div class="container-site flex flex-col items-start gap-6 py-14 md:flex-row md:items-center md:justify-between md:py-16">
       <div>
-        <h2 id="still-stuck-title" class="text-display-3 text-ink">Still stuck?</h2>
-        <p class="mt-2 text-ink-2">Tell us what you were trying to do and what happened instead.</p>
+        <h2 id="still-stuck-title" class="text-display-3 text-ink">{copy.stillStuckTitle}</h2>
+        <p class="mt-2 text-ink-2">{copy.stillStuckBody}</p>
       </div>
-      <Button href={routes.contactTopic('support')} arrow="right">Contact support</Button>
+      <Button href={contactHref} arrow="right">{copy.stillStuckCta}</Button>
     </div>
   </section>
 </BaseLayout>

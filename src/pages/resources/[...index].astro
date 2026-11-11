@@ -6,11 +6,17 @@ import FilterChips from '../../components/ui/FilterChips.astro';
 import Icon from '../../components/ui/Icon.astro';
 import PageHeader from '../../components/ui/PageHeader.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCatalog, site } from '../../lib/catalog.ts';
+import { getCatalog, getSections, site } from '../../lib/catalog.ts';
 import { pluralize } from '../../lib/format.ts';
 import { routes } from '../../lib/routes.ts';
 import { RESOURCE_TYPES } from '../../lib/schemas/content.ts';
 import { breadcrumbLd } from '../../lib/seo.ts';
+
+// Built only while at least one resource is public (rest param: undefined → /resources/).
+export async function getStaticPaths() {
+  const sections = await getSections();
+  return sections.resources ? [{ params: { index: undefined } }] : [];
+}
 
 const { resources } = await getCatalog();
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');

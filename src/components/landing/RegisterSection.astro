@@ -1,0 +1,64 @@
+---
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { site } from '../../lib/catalog.ts';
+import EarlyAccessForm from '../forms/EarlyAccessForm.astro';
+import CornerMarks from '../ui/CornerMarks.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { register } = landing;
+const b = (text: string) => brandify(text, site.name);
+const booking = site.earlyAccess.bookingUrl;
+---
+
+<section id="register" class="section scroll-mt-16 border-t border-line" aria-labelledby="register-title">
+  <div class="container-site">
+    <div class="relative overflow-hidden rounded-[1.25rem] border border-line bg-surface/50">
+      <CornerMarks />
+      <div class="dot-grid pointer-events-none absolute inset-0 opacity-50 [mask-image:linear-gradient(to_bottom,#000,transparent_60%)]" aria-hidden="true"></div>
+      <div class="relative grid gap-10 p-6 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-14">
+        <div class="lg:col-span-5">
+          <p class="eyebrow">
+            <span class="tabular text-ink-2">{index}</span>
+            {register.eyebrow}
+          </p>
+          <h2 id="register-title" class="mt-5 text-display-2 text-ink">{b(register.title)}</h2>
+          <p class="mt-5 text-lead text-ink-2">{b(register.description)}</p>
+          <h3 class="eyebrow mt-10">What happens next</h3>
+          <ol class="mt-4 space-y-3">
+            {
+              register.next.map((step, i) => (
+                <li class="flex items-start gap-3 text-[0.9375rem] text-ink-2">
+                  <span class="mono grid size-6 shrink-0 place-items-center rounded-full border border-line-strong text-xs text-ink-3" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  {step}
+                </li>
+              ))
+            }
+          </ol>
+          {
+            booking && (
+              <p class="mt-8 text-sm text-ink-2">
+                Prefer to pick a time now?{' '}
+                <a href={booking} class="link inline-flex items-center gap-1" rel="noopener">
+                  {site.earlyAccess.bookingLabel}
+                  <Icon name="arrow-up-right" size={13} />
+                  <span class="sr-only">(opens an external site)</span>
+                </a>
+              </p>
+            )
+          }
+        </div>
+        <div class="lg:col-span-7">
+          <EarlyAccessForm />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

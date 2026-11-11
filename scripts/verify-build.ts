@@ -1,7 +1,8 @@
 /**
  * Post-build verification of the generated site. Runs after every build:
- *   npm run build            → checks dist/
- *   npm run build:fixtures   → checks dist-fixtures/ (adds fixture-specific leak checks)
+ *   npm run build                     → checks dist/
+ *   npm run build:fixtures            → checks dist-fixtures/ (adds fixture-specific leak checks)
+ *   npm run build:fixtures:portfolio  → checks dist-fixtures-portfolio/ (fixtures, portfolio homepage)
  *
  * Fails (exit 1) on:
  *  - pages missing a title, description, canonical URL, Open Graph tags,
@@ -10,15 +11,20 @@
  *  - images without alt text, insecure http:// links
  *  - any trace of draft or hidden content (URLs, files, search index, sitemap, RSS)
  *  - dev-only notices or draft-preview banners in the output
+ *  - wording the site must never use (src/lib/claims.ts): verifying insurance,
+ *    compliance or vendor certification claims, invented social proof, and
+ *    "buy now"-style wording while nothing is for sale
  */
 import { existsSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { findClaimViolations, htmlToText } from '../src/lib/claims.ts';
 import { loadContent, projectRoot } from './lib/content.ts';
 
-const fixtures = process.argv.includes('--fixtures');
-const dist = join(projectRoot, fixtures ? 'dist-fixtures' : 'dist');
+const variant = process.argv.includes('--fixtures-portfolio') ? 'fixtures-portfolio' : process.argv.includes('--fixtures') ? 'fixtures' : 'production';
+const fixtures = variant !== 'production';
+const dist = join(projectRoot, variant === 'production' ? 'dist' : `dist-${variant}`);
 const errors: string[] = [];
 const warnings: string[] = [];
 const fail = (message: string) => errors.push(message);
@@ -67,6 +73,14 @@ async function main() {
 
   const titles = new Map<string, string>();
   let indexable = 0;
+
+  // Claims guard: "buy now"-style wording is only allowed once something is actually for sale.
+  const forSale = content.products.some(
+    (product) => product.isPublic && (product.data.availability === 'available' || product.data.availability === 'early-access'),
+  );
+  const checkClaims = (where: string, text: string) => {
+    for (const violation of findClaimViolations(text, { forSale })) fail(`${where}: ${violation.reason} (${violation.rule}): "${violation.excerpt}"`);
+  };
 
   for (const file of htmlFiles) {
     const html = await readFile(file, 'utf8');
@@ -132,6 +146,7 @@ async function main() {
     }
 
     if (/\b(lorem ipsum|TODO|TBD|FIXME)\b/.test(html.replace(/<script[\s\S]*?<\/script>/g, ''))) warn(`${where}: contains placeholder text (TODO/TBD/lorem ipsum)`);
+    checkClaims(where, htmlToText(html));
   }
 
   // Sitemap
@@ -150,13 +165,15 @@ async function main() {
   }
 
   // Search index, RSS, robots
-  const searchIndex = JSON.parse(await readFile(join(dist, 'search.json'), 'utf8')) as Array<{ u: string }>;
+  const searchIndex = JSON.parse(await readFile(join(dist, 'search.json'), 'utf8')) as Array<{ u: string; t: string; d: string }>;
   for (const record of searchIndex) {
     const local = resolveInternal(record.u);
     if (local && !existsSync(local)) fail(`search.json links to ${record.u}, which was not built`);
   }
+  checkClaims('search.json', searchIndex.map((record) => `${record.t}\n${record.d}`).join('\n'));
   const rss = await readFile(join(dist, 'rss.xml'), 'utf8');
   if (!rss.includes('<rss')) fail('rss.xml is not an RSS document');
+  checkClaims('rss.xml', htmlToText(rss.replace(/<!\[CDATA\[|\]\]>/g, '')));
   const robotsTxt = await readFile(join(dist, 'robots.txt'), 'utf8');
   if (!/User-agent:/i.test(robotsTxt)) fail('robots.txt is malformed');
   if (!existsSync(join(dist, '_headers'))) fail('_headers is missing from the build');
@@ -191,9 +208,9 @@ async function main() {
   if (jsGzip > 60_000) warn(`total JavaScript is ${(jsGzip / 1024).toFixed(1)} KB gzipped (budget 60 KB)`);
   if (cssGzip > 40_000) warn(`total CSS is ${(cssGzip / 1024).toFixed(1)} KB gzipped (budget 40 KB)`);
 
-  console.log(`\nverify-build (${fixtures ? 'fixtures' : 'production'}): ${htmlFiles.length} pages, ${sitemapPaths.length} sitemap URLs, ${searchIndex.length} search records`);
+  console.log(`\nverify-build (${variant}): ${htmlFiles.length} pages, ${sitemapPaths.length} sitemap URLs, ${searchIndex.length} search records`);
   console.log(`  JS ${(jsGzip / 1024).toFixed(1)} KB gz · CSS ${(cssGzip / 1024).toFixed(1)} KB gz · fonts ${(fontBytes / 1024).toFixed(1)} KB`);
-  console.log(`  hidden/draft entries checked: ${hidden.length}`);
+  console.log(`  hidden/draft entries checked: ${hidden.length} · claims guard: ${forSale ? 'scope rules' : 'scope + not-for-sale rules'}`);
   for (const message of warnings) console.log(`  ⚠ ${message}`);
   if (errors.length > 0) {
     console.error(`\n✖ ${errors.length} problem${errors.length === 1 ? '' : 's'}:`);

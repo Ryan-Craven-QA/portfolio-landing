@@ -1,42 +1,57 @@
 ---
-import { contactEmail, getCatalog, getLegalLinks, site } from '../../lib/catalog.ts';
+import { getNavigation, landingAnchors, type NavItem } from '../../config/navigation.ts';
+import { contactEmail, getCatalog, getLegalLinks, getSections, site } from '../../lib/catalog.ts';
 import { routes } from '../../lib/routes.ts';
 import LogoMark from '../brand/LogoMark.astro';
 import Icon from '../ui/Icon.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
-const { lines, resources } = await getCatalog();
+const { lines, products, resources } = await getCatalog();
+const sections = await getSections();
+const navigation = getNavigation(site.homepage, sections);
 const legalLinks = await getLegalLinks();
 const email = contactEmail('general');
 const hasDocs = resources.some((resource) => resource.type === 'documentation');
 const year = new Date().getFullYear();
+const booking = site.earlyAccess.bookingUrl;
 
-const columns = [
-  {
+const columns: Array<{ title: string; links: Array<NavItem & { external?: boolean }> }> = [];
+
+if (site.homepage === 'product') {
+  columns.push({ title: site.name, links: navigation.footerProduct });
+  columns.push({
+    title: 'Get involved',
+    links: [
+      { label: 'Request early access', href: landingAnchors.register },
+      ...(booking ? [{ label: 'Book an interview', href: booking, external: true }] : []),
+      { label: 'Contact', href: routes.contact },
+    ],
+  });
+} else if (navigation.footerProduct.length > 0) {
+  columns.push({ title: 'Explore', links: navigation.footerProduct });
+}
+
+if (site.homepage === 'product' && (sections.products || sections.solutions || sections.resources)) {
+  columns.push({
     title: 'Explore',
     links: [
-      { label: 'All products', href: routes.products },
-      { label: 'Solutions', href: routes.solutions },
-      { label: 'Resources', href: routes.resources },
+      ...(sections.products ? [{ label: 'Products', href: routes.products }] : []),
+      ...(sections.solutions ? [{ label: 'Solutions', href: routes.solutions }] : []),
+      ...(sections.resources ? [{ label: 'Resources', href: routes.resources }] : []),
     ],
-  },
-  {
-    title: 'Support',
-    links: [
-      { label: 'Support center', href: routes.support },
-      ...(hasDocs ? [{ label: 'Documentation', href: `${routes.resources}?type=documentation` }] : []),
-      { label: 'Contact support', href: routes.contactTopic('support') },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About', href: routes.about },
-      { label: 'Contact', href: routes.contact },
-      { label: 'RSS feed', href: routes.rss },
-    ],
-  },
-];
+  });
+}
+
+columns.push({
+  title: 'Company',
+  links: [
+    { label: 'About', href: routes.about },
+    { label: 'Help & FAQ', href: routes.support },
+    ...(hasDocs ? [{ label: 'Documentation', href: `${routes.resources}?type=documentation` }] : []),
+    ...(site.homepage === 'portfolio' ? [{ label: 'Contact', href: routes.contact }] : []),
+    ...(resources.length > 0 || products.length > 0 ? [{ label: 'RSS feed', href: routes.rss }] : []),
+  ],
+});
 ---
 
 <footer data-site-footer class="relative mt-auto overflow-hidden border-t border-line bg-canvas">
@@ -45,7 +60,7 @@ const columns = [
       <div class="max-w-sm">
         <a href="/" class="inline-flex items-center gap-2.5" aria-label={`${site.name} — home`}>
           <LogoMark size={22} class="text-ink" />
-          <span class="text-base font-[650] lowercase tracking-[-0.035em] text-ink">{site.name}</span>
+          <span class="text-base font-[650] tracking-[-0.03em] text-ink">{site.name}</span>
         </a>
         <p class="mt-4 text-[0.9375rem] text-ink-2">{site.tagline}</p>
         {
@@ -73,7 +88,7 @@ const columns = [
         }
       </div>
 
-      <div class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
         {
           lines.length > 0 && (
             <div class="col-span-2 sm:col-span-1">
@@ -98,8 +113,14 @@ const columns = [
               <ul class="space-y-2.5 text-[0.9375rem]">
                 {column.links.map((link) => (
                   <li>
-                    <a href={link.href} class="text-ink-2 transition-colors hover:text-ink">
+                    <a href={link.href} class="inline-flex items-center gap-1 text-ink-2 transition-colors hover:text-ink" rel={link.external ? 'noopener' : undefined}>
                       {link.label}
+                      {link.external && (
+                        <>
+                          <Icon name="arrow-up-right" size={12} />
+                          <span class="sr-only">(opens an external site)</span>
+                        </>
+                      )}
                     </a>
                   </li>
                 ))}
@@ -110,7 +131,9 @@ const columns = [
       </div>
     </div>
 
-    <div class="mt-16 flex flex-col gap-4 border-t border-line pt-6 text-sm text-ink-3 sm:flex-row sm:items-center sm:justify-between">
+    {site.disclaimer && <p class="mt-14 max-w-3xl text-sm text-ink-3" data-disclaimer>{site.disclaimer}</p>}
+
+    <div class:list={['flex flex-col gap-4 border-t border-line pt-6 text-sm text-ink-3 sm:flex-row sm:items-center sm:justify-between', site.disclaimer ? 'mt-6' : 'mt-16']}>
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
         <span>© {year} {site.legalName ?? site.name}</span>
         {
@@ -132,7 +155,7 @@ const columns = [
 
   <div class="pointer-events-none relative -mb-[0.24em] select-none overflow-hidden" aria-hidden="true">
     <p
-      class="container-site text-center text-[clamp(4.5rem,19vw,17rem)] leading-[0.8] font-[700] lowercase tracking-[-0.06em] text-transparent [background-image:linear-gradient(to_bottom,var(--line-strong),transparent_85%)] [background-clip:text]"
+      class="container-site text-center text-[clamp(3.5rem,14vw,13rem)] leading-[0.8] font-[700] tracking-[-0.055em] text-transparent [background-image:linear-gradient(to_bottom,var(--line-strong),transparent_85%)] [background-clip:text]"
     >
       {site.name}
     </p>

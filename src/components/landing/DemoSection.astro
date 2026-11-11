@@ -1,0 +1,163 @@
+---
+/**
+ * Interactive demo of the tracking workflow with FICTIONAL data.
+ * Server-rendered (readable without JavaScript); src/scripts/renewal-demo.ts
+ * adds filtering and the demo actions. Nothing is stored or sent anywhere.
+ */
+import { demoDocuments, demoPeople, personById } from '../../config/demo.ts';
+import { landing } from '../../config/landing.ts';
+import { brandify } from '../../lib/brand.ts';
+import { site } from '../../lib/catalog.ts';
+import { renderCards, renderNextUp, renderTableRows } from '../../lib/renewal-demo-view.ts';
+import { countByView, evaluate, sortDocuments } from '../../lib/renewals.ts';
+import CornerMarks from '../ui/CornerMarks.astro';
+import Icon from '../ui/Icon.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { demo } = landing;
+const today = new Date();
+// Server-render the default view ("Needs action", most urgent first) so the
+// page doesn't shift when the script takes over.
+const initial = sortDocuments(
+  demoDocuments.filter((doc) => evaluate(doc).view === 'action'),
+  'urgency',
+  (id) => personById(id).name,
+);
+const counts = countByView(demoDocuments);
+const views = [
+  { value: 'action', label: 'Needs action' },
+  { value: 'waiting', label: 'Waiting on vendor' },
+  { value: 'upcoming', label: 'Coming up' },
+  { value: 'current', label: 'Current' },
+  { value: 'all', label: 'All' },
+] as const;
+---
+
+<section id="demo" class="section scroll-mt-16 border-t border-line" aria-labelledby="demo-title">
+  <div class="container-site">
+    <SectionHeading id="demo-title" index={index} eyebrow={demo.eyebrow} title={demo.title} description={demo.description} class="mb-10 md:mb-12" />
+
+    <div class="reveal relative" data-renewal-demo data-locale={site.locale}>
+      <CornerMarks class="-inset-3 hidden sm:block" />
+      <div class="card overflow-hidden shadow-[var(--shadow-2)]">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/50 px-4 py-2.5 sm:px-5">
+          <p class="eyebrow flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+            <span class="text-ink">Interactive demo</span>
+            <span aria-hidden="true">·</span>
+            <span>Fictional vendors and people</span>
+            <span aria-hidden="true">·</span>
+            <span>Nothing is saved or sent</span>
+          </p>
+          <button type="button" class="btn btn-ghost btn-sm -my-1" data-demo-reset data-requires-js>
+            <Icon name="corner-down-left" size={14} />
+            <span>Reset demo</span>
+          </button>
+        </div>
+
+        <p class="border-b border-line px-4 py-3.5 text-[0.9375rem] sm:px-5" data-demo-next set:html={renderNextUp(demoDocuments, personById, today, site.locale)} />
+
+        <form class="flex flex-col gap-4 border-b border-line px-4 py-4 sm:px-5" data-demo-controls data-requires-js aria-label="Filter the demo">
+          <fieldset class="min-w-0">
+            <legend class="eyebrow mb-2.5">View</legend>
+            <div class="flex flex-wrap gap-1.5">
+              {
+                views.map((view, i) => (
+                  <label class="chip chip-toggle">
+                    <input type="radio" class="sr-only" name="view" value={view.value} checked={i === 0} />
+                    {view.label}
+                    <span class="mono tabular text-[0.6875rem]" data-count={view.value}>
+                      {counts[view.value]}
+                    </span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1.35fr_1fr]">
+            <label class="block">
+              <span class="eyebrow mb-2 block">Following up</span>
+              <select name="owner" class="input min-h-0 py-2 text-sm">
+                <option value="">Everyone</option>
+                {demoPeople.map((person) => <option value={person.id}>{person.name} ({person.role})</option>)}
+              </select>
+            </label>
+            <label class="block">
+              <span class="eyebrow mb-2 block">Search</span>
+              <input name="q" type="search" placeholder="Vendor or document type" autocomplete="off" class="input min-h-0 py-2 text-sm" />
+            </label>
+            <label class="block">
+              <span class="eyebrow mb-2 block">Sort</span>
+              <select name="sort" class="input min-h-0 py-2 text-sm">
+                <option value="urgency">Most urgent first</option>
+                <option value="vendor">Vendor A–Z</option>
+                <option value="owner">Owner</option>
+              </select>
+            </label>
+          </div>
+        </form>
+
+        <p class="border-b border-line px-4 py-3 text-sm text-ink-3 sm:px-5" data-no-js>
+          Showing the {counts.action} items that need action. Filters and demo actions need JavaScript.
+        </p>
+        <p class="sr-only" aria-live="polite" data-demo-status tabindex="-1"></p>
+
+        <div class="hidden md:block">
+          <table class="w-full border-collapse text-left text-sm">
+            <caption class="sr-only">Fictional vendor documents with expiration dates, statuses, owners and next actions</caption>
+            <thead class="text-ink-3">
+              <tr>
+                <th scope="col" class="th-demo w-[22%] !pl-5">Vendor</th>
+                <th scope="col" class="th-demo w-[16%]">Document</th>
+                <th scope="col" class="th-demo w-[14%]">Expires</th>
+                <th scope="col" class="th-demo w-[14%]">Status</th>
+                <th scope="col" class="th-demo w-[12%]">Following up</th>
+                <th scope="col" class="th-demo !pr-5">Next action</th>
+              </tr>
+            </thead>
+            <tbody data-demo-rows set:html={renderTableRows(initial, personById, today, site.locale)} />
+          </table>
+        </div>
+        <ul class="space-y-3 p-4 md:hidden" data-demo-cards set:html={renderCards(initial, personById, today, site.locale)} />
+
+        <div class="hidden px-5 py-12 text-center text-ink-3" data-demo-empty>
+          No documents match these filters.
+          <button type="button" class="link ml-1" data-demo-clear>Show everything</button>
+        </div>
+
+        <div class="hidden border-t border-line bg-surface-2/40 px-4 py-4 sm:px-5" data-demo-log-wrap>
+          <p class="eyebrow mb-2">Your demo activity</p>
+          <ol class="space-y-1 text-sm text-ink-2" data-demo-log></ol>
+        </div>
+      </div>
+    </div>
+    <p class="mt-6 flex items-start gap-2 text-sm text-ink-3">
+      <Icon name="info" size={15} class="mt-0.5" />
+      <span>{brandify(demo.caption, site.name)}</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .th-demo {
+    padding: 0.75rem 1rem 0.75rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+</style>
+
+<script>
+  import { initRenewalDemo } from '../../scripts/renewal-demo.ts';
+  document.querySelectorAll<HTMLElement>('[data-renewal-demo]').forEach(initRenewalDemo);
+</script>

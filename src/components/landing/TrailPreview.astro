@@ -1,0 +1,65 @@
+---
+/**
+ * Hero visual: the next few renewals as a "trail", each with its owner and
+ * next step. Built from the same FICTIONAL data as the demo and labelled so.
+ * Relative dates only ("in 6 days"), so it never goes stale.
+ */
+import { demoDocuments, personById } from '../../config/demo.ts';
+import { evaluate } from '../../lib/renewals.ts';
+import CornerMarks from '../ui/CornerMarks.astro';
+
+const upcoming = demoDocuments
+  .filter((doc) => doc.expiresIn !== null && doc.expiresIn >= 0 && (doc.state === 'on-file' || doc.state === 'requested'))
+  .sort((a, b) => (a.expiresIn ?? 0) - (b.expiresIn ?? 0))
+  .slice(0, 4)
+  .map((doc) => ({ doc, result: evaluate(doc), person: personById(doc.owner) }));
+
+const toneFor = (status: string) =>
+  status === 'due-soon' || status === 'follow-up' ? 'var(--caution)' : status === 'expired' ? 'var(--danger)' : 'var(--ink-3)';
+---
+
+<figure class="relative">
+  <CornerMarks class="-inset-3 hidden sm:block" />
+  <div class="card overflow-hidden shadow-[var(--shadow-2)]">
+    <div class="flex h-11 items-center justify-between gap-4 border-b border-line bg-surface-2/50 px-4">
+      <span class="eyebrow flex items-center gap-2">
+        <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+        Up next
+      </span>
+      <span class="eyebrow">Example · fictional</span>
+    </div>
+    <ol class="relative px-5 py-5 sm:px-6">
+      <span class="absolute top-8 bottom-10 left-[1.6rem] w-px bg-line-strong sm:left-[1.85rem]" aria-hidden="true"></span>
+      {
+        upcoming.map(({ doc, result, person }, index) => (
+          <li class="relative flex gap-4 pb-5 last:pb-0">
+            <span
+              class:list={['relative z-10 mt-1.5 grid size-3 shrink-0 place-items-center rounded-full border-2 bg-surface', index === 0 && 'ring-4 ring-accent-soft']}
+              style={`border-color: ${index === 0 ? 'var(--accent)' : toneFor(result.status)}`}
+              aria-hidden="true"
+            />
+            <div class="min-w-0 flex-1 rounded-[var(--radius-control)] border border-line bg-surface p-3.5">
+              <p class="mono flex items-center justify-between gap-3 text-[0.6875rem] tracking-wide text-ink-3 uppercase">
+                <span>{doc.expiresIn === 0 ? 'Expires today' : `In ${doc.expiresIn} days`}</span>
+                <span class:list={[result.status === 'due-soon' || result.status === 'follow-up' ? 'text-caution' : 'text-ink-3']}>{result.label}</span>
+              </p>
+              <p class="mt-1.5 truncate font-medium text-ink">{doc.vendor}</p>
+              <p class="truncate text-sm text-ink-2">{doc.document}</p>
+              <p class="mt-2.5 flex items-center gap-2 text-sm text-ink-2">
+                <span
+                  class="inline-grid size-6 shrink-0 place-items-center rounded-full border border-[var(--tone-line)] bg-[var(--tone-soft)] text-[0.6875rem] font-semibold text-tone"
+                  style={`--tone-h: ${person.hue}`}
+                  aria-hidden="true"
+                >
+                  {person.name.charAt(0)}
+                </span>
+                <span class="min-w-0 truncate"><span class="text-ink">{person.name}</span> · {result.nextAction}</span>
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+  <figcaption class="sr-only">Example of upcoming renewals using fictional vendors and people.</figcaption>
+</figure>

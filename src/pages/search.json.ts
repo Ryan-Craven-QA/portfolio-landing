@@ -3,20 +3,33 @@
  * drafts and hidden product lines can never appear in search.
  */
 import type { APIRoute } from 'astro';
-import { getCatalog } from '../lib/catalog.ts';
+import { landingAnchors } from '../config/navigation.ts';
+import { getCatalog, getSections, site } from '../lib/catalog.ts';
 import { routes } from '../lib/routes.ts';
 import type { SearchRecord } from '../lib/search.ts';
 
 export const GET: APIRoute = async () => {
   const { lines, products, solutions, resources } = await getCatalog();
+  const sections = await getSections();
+  const productMode = site.homepage === 'product';
 
   const records: SearchRecord[] = [
-    { k: 'page', t: 'Products', d: 'The full catalog', u: routes.products, g: 'catalog shop buy store' },
-    { k: 'page', t: 'Solutions', d: 'Products organized by problem', u: routes.solutions, g: 'problems use cases' },
-    { k: 'page', t: 'Resources', d: 'Guides, tutorials, downloads, and docs', u: routes.resources, g: 'guides docs documentation free downloads' },
-    { k: 'page', t: 'Support', d: 'Help, FAQ, and documentation', u: routes.support, g: 'help faq questions' },
-    { k: 'page', t: 'Contact', d: 'General, support, and business inquiries', u: routes.contact, g: 'email message licensing agency' },
-    { k: 'page', t: 'About', d: 'About the studio', u: routes.about, g: 'company studio founder' },
+    ...(productMode
+      ? [
+          { k: 'page' as const, t: 'How it works', d: `How ${site.name} would fit your week`, u: landingAnchors.howItWorks, g: 'steps setup weekly check' },
+          { k: 'page' as const, t: 'Interactive demo', d: 'Try it with fictional vendors', u: landingAnchors.demo, g: 'example sample preview try' },
+          { k: 'page' as const, t: 'Planned pricing', d: 'Starter Kit and software plans under consideration', u: landingAnchors.pricing, g: 'price cost plans' },
+          { k: 'page' as const, t: 'Early access', d: 'Join the list or request an interview', u: landingAnchors.register, g: 'sign up waitlist interview register' },
+        ]
+      : []),
+    ...(sections.products ? [{ k: 'page' as const, t: 'Products', d: 'The full catalog', u: routes.products, g: 'catalog shop buy store' }] : []),
+    ...(sections.solutions ? [{ k: 'page' as const, t: 'Solutions', d: 'Products organized by problem', u: routes.solutions, g: 'problems use cases' }] : []),
+    ...(sections.resources
+      ? [{ k: 'page' as const, t: 'Resources', d: 'Guides, tutorials, downloads, and docs', u: routes.resources, g: 'guides docs documentation free downloads' }]
+      : []),
+    { k: 'page', t: productMode ? 'Help and FAQ' : 'Support', d: productMode ? 'Common questions' : 'Help, FAQ, and documentation', u: routes.support, g: 'help faq questions' },
+    { k: 'page', t: 'Contact', d: productMode ? 'Questions and business inquiries' : 'General, support, and business inquiries', u: routes.contact, g: 'email message' },
+    { k: 'page', t: 'About', d: `About ${site.name}`, u: routes.about, g: 'company founder' },
     ...lines.map((line) => ({ k: 'line' as const, t: line.name, d: line.tagline, u: line.url, g: line.examples.join(' '), h: line.hue })),
     ...products.map((product) => ({
       k: 'product' as const,

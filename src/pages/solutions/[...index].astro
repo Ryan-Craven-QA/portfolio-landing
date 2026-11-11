@@ -4,11 +4,18 @@ import Button from '../../components/ui/Button.astro';
 import EmptyState from '../../components/ui/EmptyState.astro';
 import PageHeader from '../../components/ui/PageHeader.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCatalog, site } from '../../lib/catalog.ts';
+import { getCatalog, getSections, site } from '../../lib/catalog.ts';
 import { routes } from '../../lib/routes.ts';
 import { breadcrumbLd } from '../../lib/seo.ts';
 
+// Built only while at least one solution is public (rest param: undefined → /solutions/).
+export async function getStaticPaths() {
+  const sections = await getSections();
+  return sections.solutions ? [{ params: { index: undefined } }] : [];
+}
+
 const { solutions } = await getCatalog();
+const sections = await getSections();
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
 ---
 
@@ -35,11 +42,13 @@ const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
       ) : (
         <EmptyState icon="layers" title="Solutions will appear here as product lines launch.">
           <p>Each solution groups products around a specific problem. None are listed yet.</p>
-          <Fragment slot="actions">
-            <Button href={routes.resources} variant="secondary">
-              Browse free resources
-            </Button>
-          </Fragment>
+          {sections.resources && (
+            <Fragment slot="actions">
+              <Button href={routes.resources} variant="secondary">
+                Browse free resources
+              </Button>
+            </Fragment>
+          )}
         </EmptyState>
       )
     }

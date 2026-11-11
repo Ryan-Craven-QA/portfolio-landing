@@ -35,8 +35,9 @@ async function main() {
 
   // Brand
   const brand = section('Brand');
-  if (site.name === 'Plainwork') brand('warn', '"Plainwork" is a working name — confirm trademark and domain availability, or change `name` in src/config/site.ts');
-  else brand('ok', `Brand name: ${site.name}`);
+  if (!site.nameCleared) {
+    brand('warn', `"${site.name}" is a working name — complete trademark and domain clearance, then set \`nameCleared: true\` in src/config/site.ts`);
+  } else brand('ok', `Brand name: ${site.name} (cleared)`);
   if (!site.legalName) brand('info', 'No `legalName` — the copyright line uses the brand name');
   brand('info', 'After changing the name or hero copy, run `npm run assets:og` (and `npm run assets:icons` if the mark changes)');
 
@@ -57,9 +58,29 @@ async function main() {
   }
   if (!site.contact.responseTime) contact('info', 'No `contact.responseTime` — only add one you will reliably meet');
 
+  // Early access (single-product landing page)
+  if (site.homepage === 'product') {
+    const early = section('Early access');
+    if (hasForm) early('ok', `Early-access form posts to ${site.contact.form.provider} — submit a test registration and confirm it arrives`);
+    else if (hasEmail) early('warn', 'Early-access registration falls back to an email link. Configure `contact.form` so registrations arrive as structured submissions');
+    else early('block', 'No early-access mechanism — set `contact.form` (Formspree or Web3Forms) in src/config/site.ts');
+    if (site.earlyAccess.bookingUrl) early('ok', `Interview booking link: ${site.earlyAccess.bookingUrl}`);
+    else early('info', 'Optional: set `earlyAccess.bookingUrl` (for example a free Cal.com page) so interviewees can pick a time');
+    if (!site.disclaimer) early('block', 'No `disclaimer` — the site must state that it is an administrative tracking tool only');
+    else early('ok', 'Scope disclaimer set');
+    early('warn', 'Planned prices are shown on the landing page — confirm them in src/config/landing.ts before launch');
+  }
+
   // Updates & analytics
   const updates = section('Updates & analytics');
-  if (site.newsletter.provider === 'none') updates('info', 'No newsletter provider — the site offers the RSS feed instead (no emails collected)');
+  if (site.newsletter.provider === 'none') {
+    updates(
+      'info',
+      site.homepage === 'product'
+        ? 'No newsletter provider — early-access registrations are the update list for now (no separate sign-up)'
+        : 'No newsletter provider — the site offers the RSS feed instead (no emails collected)',
+    );
+  }
   else updates('ok', `Newsletter: ${site.newsletter.provider} — test a sign-up end to end`);
   if (site.analytics.provider === 'none') updates('info', 'Analytics off. Cloudflare Web Analytics is free and cookieless if you want it');
   else updates('ok', `Analytics: ${site.analytics.provider}`);
@@ -79,7 +100,11 @@ async function main() {
   // Catalog
   const catalog = section('Catalog');
   const visibleLines = content.lines.filter((line) => line.isPublic);
-  catalog(visibleLines.length > 0 ? 'ok' : 'block', `${visibleLines.length} of ${content.lines.length} product lines visible`);
+  if (site.homepage === 'product' && visibleLines.length === 0) {
+    catalog('info', `Single-product mode: catalog pages are off (${content.lines.length} product lines hidden)`);
+  } else {
+    catalog(visibleLines.length > 0 ? 'ok' : 'block', `${visibleLines.length} of ${content.lines.length} product lines visible`);
+  }
   for (const line of visibleLines) catalog('info', `  ${line.name}: status "${String(line.data.status ?? 'in-development')}"`);
   catalog('info', `${publicProducts.length} public products, ${content.products.length - publicProducts.length} drafts or hidden`);
   for (const product of purchasable) {
@@ -103,7 +128,9 @@ async function main() {
   const contentSection = section('Content');
   const publishedResources = content.resources.filter((r) => r.isPublic);
   contentSection('info', `${publishedResources.length} published resources, ${content.resources.length - publishedResources.length} drafts/scheduled`);
-  contentSection('warn', 'Review the starter guides in src/content/resources/ — edit or unpublish anything that does not fit your voice');
+  if (publishedResources.length > 0) {
+    contentSection('warn', 'Review the published guides in src/content/resources/ — edit or unpublish anything that does not fit your voice');
+  }
   const draftFaqs = content.faqs.filter((faq) => faq.data.status !== 'published');
   if (draftFaqs.length > 0) contentSection('info', `${draftFaqs.length} draft FAQ answers to write: ${draftFaqs.map((f) => f.id).join(', ')}`);
   if (!site.founder) contentSection('info', 'No founder profile on the About page (optional)');

@@ -1,6 +1,6 @@
 ---
-import { primaryCta } from '../../config/navigation.ts';
-import { site, type Solution } from '../../lib/catalog.ts';
+import { getNavigation } from '../../config/navigation.ts';
+import { getSections, site, type Solution } from '../../lib/catalog.ts';
 import { routes } from '../../lib/routes.ts';
 import Button from '../ui/Button.astro';
 import TaskFinder from './TaskFinder.astro';
@@ -11,6 +11,7 @@ interface Props {
 
 const { solutions } = Astro.props;
 const { hero } = site;
+const primaryCta = getNavigation(site.homepage, await getSections()).cta;
 ---
 
 <section class="relative overflow-hidden" aria-labelledby="hero-title">

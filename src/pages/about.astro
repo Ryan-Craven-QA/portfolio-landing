@@ -1,5 +1,6 @@
 ---
-import { about, home } from '../config/copy.ts';
+import { about } from '../config/copy.ts';
+import { getNavigation } from '../config/navigation.ts';
 import LineGlyph from '../components/brand/LineGlyph.astro';
 import PrinciplesGrid from '../components/home/PrinciplesGrid.astro';
 import Button from '../components/ui/Button.astro';
@@ -10,41 +11,44 @@ import LineStatusBadge from '../components/ui/LineStatusBadge.astro';
 import PageHeader from '../components/ui/PageHeader.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCatalog, site } from '../lib/catalog.ts';
+import { brandify } from '../lib/brand.ts';
+import { getCatalog, getSections, site } from '../lib/catalog.ts';
 import { routes } from '../lib/routes.ts';
 import { breadcrumbLd, organizationLd } from '../lib/seo.ts';
 
 const { lines } = await getCatalog();
 const founder = site.founder;
+const cta = getNavigation(site.homepage, await getSections()).cta;
+const b = (text: string) => brandify(text, site.name);
 const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
 ---
 
 <BaseLayout
   title="About"
-  description={`${site.name} is an independent studio building practical software, templates, and guides for everyday work.`}
+  description={b(about.description)}
   jsonLd={[organizationLd(site, siteUrl), breadcrumbLd([{ label: 'Home', href: '/' }, { label: 'About', href: routes.about }], siteUrl)]}
 >
-  <PageHeader eyebrow={about.eyebrow} title={about.title} description={about.description} breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
+  <PageHeader eyebrow={about.eyebrow} title={b(about.title)} description={b(about.description)} breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
 
   <section class="container-site section" aria-label="What we do">
     <div class="grid gap-10 lg:grid-cols-12">
-      <p class="reveal text-display-3 text-ink lg:col-span-5">{about.statement}</p>
+      <p class="reveal text-display-3 text-ink lg:col-span-5">{b(about.statement)}</p>
       <div class="reveal space-y-5 text-lead text-ink-2 lg:col-span-6 lg:col-start-7">
-        {about.intro.map((paragraph) => <p>{paragraph}</p>)}
+        {about.intro.map((paragraph) => <p>{b(paragraph)}</p>)}
       </div>
     </div>
   </section>
 
   <section class="border-t border-line" aria-labelledby="how-title">
     <div class="container-site section">
-      <h2 id="how-title" class="eyebrow mb-8">How the studio works</h2>
+      <h2 id="how-title" class="eyebrow mb-8">How we work</h2>
       <ul class="grid gap-4 md:grid-cols-3">
         {
           about.howWeWork.map((item, i) => (
             <li class="reveal card relative p-7" style={`--i: ${i}`}>
               <span class="mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</span>
-              <h3 class="mt-4 text-xl font-[620] tracking-[-0.02em] text-ink">{item.title}</h3>
-              <p class="mt-2 text-ink-2">{item.body}</p>
+              <h3 class="mt-4 text-xl font-[620] tracking-[-0.02em] text-ink">{b(item.title)}</h3>
+              <p class="mt-2 text-ink-2">{b(item.body)}</p>
             </li>
           ))
         }
@@ -136,17 +140,17 @@ const siteUrl = (Astro.site?.href ?? site.url).replace(/\/$/, '');
 
   <section class="border-t border-line" aria-labelledby="about-principles-title">
     <div class="container-site section">
-      <SectionHeading id="about-principles-title" eyebrow={home.principles.eyebrow} title={home.principles.title} description={home.principles.description} class="mb-12" />
+      <SectionHeading id="about-principles-title" eyebrow={about.principlesEyebrow} title={about.principlesTitle} description={b(about.principlesDescription)} class="mb-12" />
       <PrinciplesGrid />
     </div>
   </section>
 
   <section class="border-t border-line" aria-labelledby="about-cta-title">
     <div class="container-site flex flex-col items-start gap-6 py-14 md:flex-row md:items-center md:justify-between md:py-20">
-      <h2 id="about-cta-title" class="max-w-xl text-display-3 text-ink">Have a question, an idea, or a job that needs a better tool?</h2>
+      <h2 id="about-cta-title" class="max-w-xl text-display-3 text-ink">{b(about.ctaTitle)}</h2>
       <div class="flex flex-wrap gap-3">
-        <Button href={routes.contact} arrow="right">Get in touch</Button>
-        <Button href={routes.products} variant="secondary">Explore products</Button>
+        <Button href={cta.href} arrow="right">{cta.label}</Button>
+        <Button href={routes.contact} variant="secondary">Contact us</Button>
       </div>
     </div>
   </section>

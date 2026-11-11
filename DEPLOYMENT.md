@@ -1,11 +1,47 @@
 # Deployment
 
-The site builds to plain static files in `dist/`. It is designed for the
-**Cloudflare Pages free plan**, connected to this GitHub repository, so every
-push to `main` deploys automatically and every other branch or pull request
-gets its own preview URL.
+The RenewalTrail site builds to plain static files in `dist/`. It is designed for the **Cloudflare Pages
+free plan**, connected to this GitHub repository, so every push to `main` deploys automatically and every
+other branch or pull request gets its own preview URL.
 
-> Nothing has been deployed yet. These are the steps to do it yourself.
+> **Nothing has been deployed, and no domain has been bought.** Both need your approval. These are the steps
+> to do it yourself when you decide to.
+
+## Minimum-cost hosting options
+
+The site is static: any static host works. Compared for a small **commercial** product site (as of
+November 2026; check current terms before signing up):
+
+| Host | Cost for this site | Fit | Notes |
+| --- | --- | --- | --- |
+| **Cloudflare Pages** (recommended) | **$0** | ✅ | Free plan allows commercial sites. Unlimited static requests and bandwidth, 500 builds/month, preview URL per branch, `_headers` support, free `*.pages.dev` address. Steps below. |
+| Cloudflare Workers (static assets) | $0 | ✅ | Cloudflare's newer option for new projects; static asset requests are free and unlimited. Same `_headers`. See the alternative at the end. |
+| Netlify (free plan) | $0 up to a monthly credit cap | ⚠️ | Credit-based since 2025: the free plan has a hard monthly credit cap (bandwidth and builds use credits) and **pauses the site** when it runs out. Fine for low traffic; watch usage. |
+| GitHub Pages | $0 | ❌ | GitHub's terms say Pages may not be used as free hosting for an online business or a site primarily for commercial transactions or services. |
+| Vercel (Hobby) | $0 | ❌ | Hobby is limited to non-commercial personal use; a business site needs Pro (paid per seat). |
+
+**Recommendation:** Cloudflare Pages on the free `*.pages.dev` address during validation. Total cost: **$0**.
+Add a custom domain (≈ $11/year) only after trademark and domain clearance, and only with your approval.
+
+## Required external configuration
+
+Everything the site needs from outside this repository. Nothing here can be created on your behalf: each
+needs your own account.
+
+| # | What | Required? | Where it goes | Cost |
+| --- | --- | --- | --- | --- |
+| 1 | **Early-access form:** a Formspree form (or a Web3Forms access key) | **Yes**, it's the main conversion | `contact.form` in `src/config/site.ts` | $0 (Formspree free: 50 submissions/month; Web3Forms free: 250/month) |
+| 2 | **Public site URL:** `SITE_URL` environment variable in the hosting project | **Yes**, for indexing (every page is `noindex` until it's set) | Cloudflare Pages → Settings → Environment variables | $0 |
+| 3 | **Privacy policy:** your own, describing the form provider and what you collect | **Yes**, once the form is live (preflight blocks launch without it) | `src/content/legal/privacy.md` (set `status: published`) or `legal.privacyUrl` | $0, or a lawyer/policy service |
+| 4 | **Contact email:** a mailbox you check | Recommended | `contact.general` (and optionally `business`) | $0 with an address you already have; with a custom domain, Cloudflare Email Routing forwards `hello@yourdomain` to your inbox for free |
+| 5 | **Interview booking link:** e.g. a free Cal.com 20-minute event | Optional | `earlyAccess.bookingUrl` | $0 |
+| 6 | **Brand clearance:** trademark search and domain availability for "RenewalTrail" | Before a custom domain or public promotion | then set `nameCleared: true` (and `name` if it changes, then `npm run assets:og`) | $0 for a basic search; legal advice costs extra |
+| 7 | Custom domain | Optional, **needs your approval** | Pages → Custom domains; update `SITE_URL` | ≈ $11/year for a `.com` |
+| 8 | Analytics (Cloudflare Web Analytics) | Optional | `analytics` in `src/config/site.ts` | $0, cookieless |
+| 9 | Founding pre-order checkout (merchant of record or Stripe Payment Link) | Only for the validation plan; shared privately, **not** on the site | — (see VALIDATION_PLAN.md §3) | Per-sale fees only |
+
+After changing the config, run `npm run preflight`. It lists anything still blocking launch.
+[LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) has the complete list of remaining launch requirements.
 
 ## Accounts you need
 
@@ -13,10 +49,10 @@ gets its own preview URL.
 | --- | --- | --- |
 | GitHub (you have it) | Yes — hosts the code, runs CI | Free |
 | Cloudflare | Yes — hosting | Free plan |
-| Domain registrar | Optional — a custom domain | ≈ $11/year for a `.com` (see costs) |
-| Form provider (Formspree or Web3Forms) | Recommended — contact form | Free tier |
-| Newsletter provider (Buttondown, Kit, …) | Optional | Free tier |
-| Checkout provider (Gumroad, Stripe, …) | When you sell | Fees per sale, no monthly cost on the basic plans |
+| Form provider (Formspree or Web3Forms) | **Yes** — early-access registration | Free tier |
+| Cal.com (or another booking tool) | Optional — interview scheduling | Free plan |
+| Domain registrar | Optional, later — a custom domain | ≈ $11/year for a `.com` (see costs) |
+| Checkout provider (Lemon Squeezy, Paddle, Stripe, …) | Later — founding pre-orders, then sales | Fees per sale, no monthly cost on the basic plans |
 
 ## Costs (as of November 2026 — check current pricing before signing up)
 
@@ -26,8 +62,9 @@ gets its own preview URL.
 | Cloudflare Web Analytics | **$0** | Cookieless; optional |
 | GitHub Actions CI | **$0** | Free minutes for public repositories; private repositories include a monthly free allowance |
 | Custom domain | ≈ **$11/year** | Cloudflare Registrar sells at cost. The `.com` wholesale price rose to $10.97 on 1 Nov 2026, so expect roughly $11.20/year (estimate) |
-| Contact form | **$0** | Formspree free: 50 submissions/month. Web3Forms free: 250/month |
-| Newsletter | **$0** to start | Kit free: up to 10,000 subscribers. Buttondown free: up to 100. MailerLite free: 250 |
+| Early-access / contact form | **$0** | Formspree free: 50 submissions/month. Web3Forms free: 250/month |
+| Interview booking | **$0** | Cal.com free plan for individuals |
+| Newsletter (not needed yet) | **$0** to start | Early-access registrations are the update list for now |
 | Checkout | per sale | See MONETIZATION.md |
 
 **Total to launch: $0**, or about $11/year with a custom domain.
@@ -172,7 +209,7 @@ instead of Pages, add `wrangler.jsonc`:
 
 ```jsonc
 {
-  "name": "plainwork-site",
+  "name": "renewaltrail-site",
   "compatibility_date": "2026-11-01",
   "assets": { "directory": "./dist", "not_found_handling": "404-page" }
 }
@@ -184,8 +221,8 @@ repository** with build command `npm run build` and deploy command
 domains do not get `noindex` automatically on Workers, so keep `SITE_NOINDEX`
 set for any staging deployment.
 
-Any static host works (Netlify, Vercel, GitHub Pages…): publish `dist/` and
-translate `public/_headers` into that host's header configuration.
+Any static host works: publish `dist/` and translate `public/_headers` into that host's header
+configuration. Check the commercial-use terms first (see the comparison at the top).
 
 ## Troubleshooting
 
@@ -195,5 +232,7 @@ translate `public/_headers` into that host's header configuration.
 | Build fails with `[content] … refers to unknown …` | A product/resource/solution points at an id that does not exist |
 | `verify-build` reports a broken link or leak | Fix the content it names; it runs on every build on purpose |
 | Pages are `noindex` in production | `SITE_URL` is still a placeholder, or `SITE_NOINDEX` is set |
+| Early-access form says "registration opens soon" | `contact.form` is not configured (or the build used an old config) |
 | Contact form missing on the live site | `contact.form` is not configured |
+| `verify-build` reports a forbidden claim | Reword the sentence it quotes; see the scope rules in CLAUDE.md and `src/lib/claims.ts` |
 | Node version errors | Cloudflare reads `.node-version`; Astro 7 needs ≥ 22.23.4 |

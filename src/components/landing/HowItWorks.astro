@@ -1,0 +1,43 @@
+---
+import { landing } from '../../config/landing.ts';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  index: string;
+}
+
+const { index } = Astro.props;
+const { howItWorks } = landing;
+---
+
+<section id="how-it-works" class="section scroll-mt-16 border-t border-line" aria-labelledby="how-title">
+  <div class="container-site">
+    <SectionHeading id="how-title" index={index} eyebrow={howItWorks.eyebrow} title={howItWorks.title} description={howItWorks.description} class="mb-12 md:mb-16" />
+    <ol class="relative grid gap-6 lg:grid-cols-5 lg:gap-5">
+      <span class="pointer-events-none absolute top-[1.15rem] right-[10%] left-[10%] hidden h-px border-t border-dashed border-line-strong lg:block" aria-hidden="true"></span>
+      {
+        howItWorks.steps.map((step, i) => (
+          <li class="reveal relative flex gap-4 lg:flex-col lg:gap-0" style={`--i: ${i}`}>
+            <span
+              class:list={[
+                'mono relative z-10 grid size-9 shrink-0 place-items-center rounded-full border text-sm font-medium',
+                i === 2 ? 'border-accent bg-accent text-accent-ink' : 'border-line-strong bg-canvas text-ink-2',
+              ]}
+              aria-hidden="true"
+            >
+              {i + 1}
+            </span>
+            <div class="lg:mt-6">
+              <h3 class="text-[1.0625rem] font-[620] tracking-[-0.01em] text-ink">
+                <span class="sr-only">Step {i + 1}: </span>
+                {step.title}
+              </h3>
+              <p class="mt-2 text-[0.9375rem] text-ink-2">{step.body}</p>
+              {i === 2 && <p class="mono mt-3 text-xs tracking-wide text-accent uppercase">The weekly check</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

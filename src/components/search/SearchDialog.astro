@@ -1,14 +1,16 @@
 ---
 /** ⌘K search. Behaviour lives in src/scripts/search-dialog.ts. */
-import { getCatalog } from '../../lib/catalog.ts';
+import { getCatalog, getSections } from '../../lib/catalog.ts';
 import { routes } from '../../lib/routes.ts';
 import Icon from '../ui/Icon.astro';
 
 const { lines, solutions } = await getCatalog();
+const sections = await getSections();
 const suggestions = [
-  { label: 'All products', href: routes.products, icon: 'grid' as const },
+  ...(sections.products ? [{ label: 'All products', href: routes.products, icon: 'grid' as const }] : []),
   ...solutions.slice(0, 3).map((solution) => ({ label: solution.title, href: solution.url, icon: 'arrow-right' as const })),
-  { label: 'Resource library', href: routes.resources, icon: 'book' as const },
+  ...(sections.resources ? [{ label: 'Resource library', href: routes.resources, icon: 'book' as const }] : []),
+  { label: 'Help and FAQ', href: routes.support, icon: 'lifebuoy' as const },
   { label: 'Contact', href: routes.contact, icon: 'mail' as const },
 ];
 ---
@@ -66,7 +68,7 @@ const suggestions = [
         </ul>
       </div>
       <div id="search-results" role="listbox" aria-label="Search results" data-search-results></div>
-      <p data-search-empty hidden class="px-3 py-10 text-center text-ink-3">No matches. Try a different word, or browse <a href={routes.products} class="link">all products</a>.</p>
+      <p data-search-empty hidden class="px-3 py-10 text-center text-ink-3">No matches. Try a different word{sections.products ? <>, or browse <a href={routes.products} class="link">all products</a></> : ''}.</p>
     </div>
 
     <div class="flex items-center justify-between gap-4 border-t border-line bg-surface-2/50 px-4 py-2.5 text-xs text-ink-3">

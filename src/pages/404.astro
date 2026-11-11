@@ -2,17 +2,29 @@
 import Button from '../components/ui/Button.astro';
 import CornerMarks from '../components/ui/CornerMarks.astro';
 import Icon from '../components/ui/Icon.astro';
+import { landingAnchors } from '../config/navigation.ts';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCatalog } from '../lib/catalog.ts';
+import { getCatalog, getSections, site } from '../lib/catalog.ts';
+import type { IconName } from '../lib/icons.ts';
 import { routes } from '../lib/routes.ts';
 
 const { lines } = await getCatalog();
-const links = [
-  { label: 'Products', href: routes.products, icon: 'grid' as const },
-  { label: 'Solutions', href: routes.solutions, icon: 'layers' as const },
-  { label: 'Resources', href: routes.resources, icon: 'book' as const },
-  { label: 'Support', href: routes.support, icon: 'lifebuoy' as const },
-];
+const sections = await getSections();
+const links: Array<{ label: string; href: string; icon: IconName }> =
+  site.homepage === 'product'
+    ? [
+        { label: 'How it works', href: landingAnchors.howItWorks, icon: 'list' },
+        { label: 'Interactive demo', href: landingAnchors.demo, icon: 'calendar' },
+        { label: 'Planned pricing', href: landingAnchors.pricing, icon: 'tag' },
+        { label: 'Help and FAQ', href: routes.support, icon: 'lifebuoy' },
+      ]
+    : [
+        ...(sections.products ? [{ label: 'Products', href: routes.products, icon: 'grid' as const }] : []),
+        ...(sections.solutions ? [{ label: 'Solutions', href: routes.solutions, icon: 'layers' as const }] : []),
+        ...(sections.resources ? [{ label: 'Resources', href: routes.resources, icon: 'book' as const }] : []),
+        { label: 'Support', href: routes.support, icon: 'lifebuoy' },
+        { label: 'Contact', href: routes.contact, icon: 'mail' },
+      ];
 ---
 
 <BaseLayout title="Page not found" description="The page you were looking for could not be found." noindex>
@@ -23,23 +35,27 @@ const links = [
         <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
         Error 404
       </p>
-      <h1 class="mt-6 max-w-[16ch] text-display-1 text-ink">This page isn’t on the workbench.</h1>
+      <h1 class="mt-6 max-w-[16ch] text-display-1 text-ink">We couldn’t find that page.</h1>
       <p class="enter mt-6 max-w-[36rem] text-lead text-ink-2" style="--i: 2">
-        The link may be out of date, or the page may have moved. Try searching, or head somewhere useful below.
+        The link may be out of date, or the page may have moved. {site.features.search ? 'Try searching, or head somewhere useful below.' : 'Try one of these instead.'}
       </p>
       <div class="enter mt-10 flex flex-wrap gap-3" style="--i: 3">
         <Button href="/" arrow="right">Back to home</Button>
-        <button type="button" class="btn btn-secondary" data-search-open data-requires-js>
-          <Icon name="search" size={17} />
-          <span>Search the site</span>
-        </button>
+        {
+          site.features.search && (
+            <button type="button" class="btn btn-secondary" data-search-open data-requires-js>
+              <Icon name="search" size={17} />
+              <span>Search the site</span>
+            </button>
+          )
+        }
       </div>
       <div class="enter relative mt-16 max-w-3xl" style="--i: 4">
         <CornerMarks class="-inset-3" />
         <ul class="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line sm:grid-cols-2">
           {
-            links.map((link) => (
-              <li>
+            links.map((link, i) => (
+              <li class:list={[links.length % 2 === 1 && i === links.length - 1 && 'sm:col-span-2']}>
                 <a href={link.href} class="group flex items-center gap-3 bg-canvas p-5 text-ink-2 transition-colors hover:bg-surface hover:text-ink">
                   <Icon name={link.icon} size={18} class="text-ink-3" />
                   <span class="flex-1 font-medium">{link.label}</span>

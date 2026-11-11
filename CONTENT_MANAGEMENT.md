@@ -1,13 +1,63 @@
 # Content management
 
-Everything visitors see comes from a few files. You never edit page templates
-to add a product, change prices, or hide a product line.
+Everything visitors see comes from a few files. You never edit page templates to change copy, prices,
+the demo or the FAQ.
+
+## The RenewalTrail landing page (single-product mode)
+
+| What | Where |
+| --- | --- |
+| Brand name, headline, intro, disclaimer, form, booking link | `src/config/site.ts` (`name`, `hero`, `disclaimer`, `contact.form`, `earlyAccess`) |
+| Problem, solution, features, how it works, audience, planned pricing, registration copy | `src/config/landing.ts` |
+| Demo vendors, people and documents (fictional) | `src/config/demo.ts` |
+| FAQ (landing page and Help page) | `src/content/faqs.yaml` |
+| About, Contact and Help page copy | `src/config/copy.ts` |
+
+Rules for every edit:
+
+- **Write `{brand}` instead of the name.** It is replaced with `name` from `site.ts`, so renaming is one change.
+- **Administrative tracking only.** Never write that RenewalTrail verifies insurance, ensures compliance or
+  certifies vendors. Saying what it does *not* do is fine. The build fails on forbidden claims and prints
+  the sentence to fix.
+- **Nothing is for sale yet.** Keep prices labelled "planned"; don't add "buy now", "available now",
+  "free trial" or sign-in wording (also enforced by the build).
+- **Demo data stays fictional.** Use made-up names, keep the "Fictional" labels, and store dates as
+  `expiresIn` (days from today) so the demo never goes stale. Each document's `owner` must be a person id
+  from `demoPeople`. `npm run test:unit` checks this.
+- After changing the headline or name, run `npm run assets:og` to refresh the social sharing image.
+
+Preview your edits with `npm run dev`, then run `npm run test:unit` (copy and demo checks) and
+`npm run build` (claims guard, links).
+
+### Planned pricing
+
+Each plan in `landing.pricing.plans` has a `stage` (e.g. "First release · in development"), a planned
+`price` or `priceRange`, `billing`, an optional `founding` price, what it `includes`, and a `cta` whose
+`intent` preselects the matching option on the early-access form. The free interview plan also has
+`stageWhenClosed`, which is shown instead of "Open now" until a form or email is configured.
+
+When the Starter Kit is ready to sell, follow LAUNCH_CHECKLIST.md part B. Purchases always go through a
+published product with a verified checkout (below), never a link typed into the landing copy.
+
+### FAQ
+
+`src/content/faqs.yaml`: each entry has `question`, `answer` (Markdown), `category`
+(`general`, `products`, `purchasing`, `support`) and `status`. Only `published` entries appear. The landing
+page shows all of them; the Help page groups them by category.
+
+---
+
+## The catalog (multi-product mode, currently hidden)
+
+The original catalog is still here for future products. In single-product mode every product line is hidden,
+so catalog pages aren't built. The Starter Kit already exists as a **draft** product
+(`src/content/products/renewaltrail-starter-kit.md`) under the hidden `renewaltrail` line.
 
 | What | Where |
 | --- | --- |
 | Brand, URL, contact, newsletter, analytics, legal links | `src/config/site.ts` |
-| Homepage / about copy, principles | `src/config/copy.ts` |
-| Product lines (the five "businesses") | `src/content/businesses.yaml` |
+| Portfolio homepage copy, principles | `src/config/copy.ts` |
+| Product lines (all hidden in single-product mode) | `src/content/businesses.yaml` |
 | Products | `src/content/products/<product-id>.md` |
 | Product images | `src/assets/products/<product-id>/` |
 | Solutions (problem-oriented pages) | `src/content/solutions.yaml` |
